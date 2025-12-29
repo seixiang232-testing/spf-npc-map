@@ -1,14 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Singapore Police NPC Boundaries</title>
+  <title>Singapore Police NPC Boundaries (Google Maps)</title>
   <meta charset="utf-8" />
-
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
 
   <style>
     body { margin: 0; }
@@ -19,38 +13,46 @@
 <body>
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <script>
-    // 1. Create the map
-    const map = L.map("map").setView([1.3521, 103.8198], 11);
+    function initMap() {
+      // 1. Create the Google Map
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 1.3521, lng: 103.8198 },
+        zoom: 11,
+        mapTypeId: "roadmap"
+      });
 
-    // 2. Add OpenStreetMap tiles (FREE)
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
+      // 2. Load NPC boundaries directly from data.gov.sg (AUTO UPDATE)
+      map.data.loadGeoJson(
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_89b44df21fccc4f51390eaff16aa1fe8?format=geojson"
+      );
 
-    // 3. Load NPC boundaries from data.gov.sg (AUTO-UPDATED)
-    fetch("https://api-open.data.gov.sg/v1/public/api/datasets/d_89b44df21fccc4f51390eaff16aa1fe8?format=geojson")
-      .then(response => response.json())
-      .then(data => {
-        L.geoJSON(data, {
-          style: {
-            color: "#0047AB",
-            weight: 2,
-            fillOpacity: 0.2
-          },
-          onEachFeature: function (feature, layer) {
-            if (feature.properties) {
-              layer.bindPopup(
-                "<b>NPC Name:</b> " + (feature.properties.name || "N/A")
-              );
-            }
-          }
-        }).addTo(map);
-      })
-      .catch(err => console.error("Error loading NPC data:", err));
+      // 3. Style the NPC polygons
+      map.data.setStyle({
+        fillColor: "#0047AB",
+        fillOpacity: 0.25,
+        strokeColor: "#0047AB",
+        strokeWeight: 2
+      });
+
+      // 4. Popup (InfoWindow) on click
+      const infoWindow = new google.maps.InfoWindow();
+
+      map.data.addListener("click", (event) => {
+        const name = event.feature.getProperty("name") || "NPC";
+        infoWindow.setContent("<b>NPC Name:</b> " + name);
+        infoWindow.setPosition(event.latLng);
+        infoWindow.open(map);
+      });
+    }
   </script>
+
+  <!-- Google Maps JS API -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap"
+    async
+    defer>
+  </script>
+
 </body>
 </html>
