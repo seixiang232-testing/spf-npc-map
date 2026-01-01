@@ -32,7 +32,6 @@
 
 <script>
 function initMap() {
-
   // 1. Initialise map
   const map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: 1.3521, lng: 103.8198 },
@@ -55,12 +54,20 @@ function initMap() {
 
   // 3. Fit map to NPC bounds
   const bounds = new google.maps.LatLngBounds();
+  let featureCount = 0;
 
   map.data.addListener("addfeature", e => {
+    featureCount++;
     collectLatLng(e.feature.getGeometry(), bounds);
-    map.fitBounds(bounds);
   });
 
+  // 🔑 Wait until ALL features are loaded
+  map.data.addListener("idle", () => {
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds);
+    }
+  });
+  
   // 4. Click popup
   const infoWindow = new google.maps.InfoWindow();
 
