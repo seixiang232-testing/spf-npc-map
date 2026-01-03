@@ -43,10 +43,10 @@ function initMap() {
   const bounds = new google.maps.LatLngBounds();
   map.data.loadGeoJson(GEOJSON_PROXY_URL, null, features => {
     features.forEach(feature => {
-      if (!feature.getProperty("NPC_NAME")) {
-        map.data.remove(feature);
-        return;
-      }
+      // if (!feature.getProperty("NPC_NAME")) {
+      //   map.data.remove(feature);
+      //   return;
+      // }
       collectLatLng(feature.getGeometry(), bounds);
     });
   
