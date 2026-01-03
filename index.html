@@ -39,11 +39,19 @@ function initMap() {
   });
 
   // 🔁 LOAD NPCs FROM CLOUDFLARE WORKER
+  const bounds = new google.maps.LatLngBounds();
   const GEOJSON_PROXY_URL = "https://npc-geojson-proxy.seixiang232.workers.dev";
-  map.data.loadGeoJson(GEOJSON_PROXY_URL);
-  map.data.addListener("addfeature", e => {
-    if (!e.feature.getProperty("NPC_NAME")) {
-      map.data.remove(e.feature);
+  map.data.loadGeoJson(GEOJSON_PROXY_URL, null, features => {
+  features.forEach(feature => {
+      if (!feature.getProperty("NPC_NAME")) {
+        map.data.remove(feature);
+        return;
+      }
+      collectLatLng(feature.getGeometry(), bounds);
+    });
+  
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds);
     }
   });
   
@@ -55,22 +63,8 @@ function initMap() {
     strokeWeight: 5
   });
 
-  // 3. Fit map to NPC bounds
-  const bounds = new google.maps.LatLngBounds();
-  map.data.addListener("addfeature", e => {
-    collectLatLng(e.feature.getGeometry(), bounds);
-  });
-
-  // 🔑 Wait until ALL feature are loaded
-  map.data.addListener("addfeature", () => {
-    if (!bounds.isEmpty()) {
-      map.fitBounds(bounds);
-    }
-  });
-  
-  // 4. Click popup
+  // 3. Click popup
   const infoWindow = new google.maps.InfoWindow();
-
   map.data.addListener("click", event => {
     const name =
       event.feature.getProperty("NPC_NAME") ||
@@ -81,7 +75,7 @@ function initMap() {
     infoWindow.open(map);
   });
 
-  // 5. Toggle control
+  // 4. Toggle control
   const toggleDiv = document.createElement("div");
   toggleDiv.className = "control-box";
   toggleDiv.innerHTML = `
@@ -98,7 +92,7 @@ function initMap() {
     map.data.setMap(e.target.checked ? map : null);
   });
 
-  // 6. Legend
+  // 5. Legend
   const legend = document.createElement("div");
   legend.className = "control-box";
   legend.innerHTML = `
