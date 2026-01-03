@@ -39,10 +39,10 @@ function initMap() {
   });
 
   // 🔁 LOAD NPCs FROM CLOUDFLARE WORKER
-  const bounds = new google.maps.LatLngBounds();
   const GEOJSON_PROXY_URL = "https://npc-geojson-proxy.seixiang232.workers.dev";
+  const bounds = new google.maps.LatLngBounds();
   map.data.loadGeoJson(GEOJSON_PROXY_URL, null, features => {
-  features.forEach(feature => {
+    features.forEach(feature => {
       if (!feature.getProperty("NPC_NAME")) {
         map.data.remove(feature);
         return;
@@ -50,9 +50,8 @@ function initMap() {
       collectLatLng(feature.getGeometry(), bounds);
     });
   
-    // if (!bounds.isEmpty()) {
-    //   map.fitBounds(bounds);
-    // }
+    // 👇 ONE single call
+    map.fitBounds(bounds);
   });
   
   // 2. Style NPC polygons
