@@ -30,7 +30,9 @@
     }
 
     .npc { background: #0047AB; }
-    .est { background: #D32F2F; border-radius: 50%; }
+    .npp { background: #4CAF50; border-radius: 50%; } /* Green */
+    .est { background: #FFA500; border-radius: 50%; } /* Orange */
+    .closed { background: #D32F2F; border-radius: 50%; } /* Red */
     
     /* InfoWindow Table Styles */
     .info-window {
@@ -125,15 +127,21 @@ function initMap() {
     ESTABLISHMENTS_GEOJSON_PROXY_URL
   );
 
-  estLayer.setStyle({
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 5,
-      fillColor: "#D32F2F",
-      fillOpacity: 1,
-      strokeWeight: 1,
-      strokeColor: "#ffffff"
-    }
+  estLayer.setStyle(feature => {
+    const department = feature.getProperty("DEPARTMENT") || "";
+    const isNPP = department.includes("Neighbourhood Police Post");
+    const isClosed = department.includes("Closed");
+    
+    return {
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 5,
+        fillColor: isNPP ? "#4CAF50" : isClosed ? "#D32F2F" : "#FFA500",
+        fillOpacity: 1,
+        strokeWeight: 1,
+        strokeColor: "#ffffff"
+      }
+    };
   });
 
   estLayer.addListener("click", e => {
@@ -141,7 +149,7 @@ function initMap() {
     
     infoWindow.setContent(`
       <div class="info-window">
-        <b>Establishment Info</b>
+        <h2>Establishment Info:</h2><br>
         <table class="info-table">
           <thead>
             <tr>
@@ -183,10 +191,12 @@ function initMap() {
   const toggleDiv = document.createElement("div");
   toggleDiv.className = "control-box";
   toggleDiv.innerHTML = `
+    <b>Filter</b>
     <label>
       <input type="checkbox" checked id="npcToggle">
       Show SPF NPC Boundaries
     </label><br>
+    
     <label>
       <input type="checkbox" checked id="estToggle">
       Show SPF Establishments
@@ -206,10 +216,16 @@ function initMap() {
   legend.innerHTML = `
     <b>Legend</b>
     <div class="legend-row">
-      <span class="color-box npc"></span> NPC Boundary
+      <span class="color-box npc"></span> Neighbourhood Police Centres (NPCs) Boundary
     </div>
     <div class="legend-row">
-      <span class="color-box est"></span> Establishment
+      <span class="color-box npp"></span> Neighbourhood Police Post (NPP)
+    </div>
+    <div class="legend-row">
+      <span class="color-box est"></span> Other Establishments
+    </div>
+    <div class="legend-row">
+      <span class="color-box closed"></span> Closed Establishments
     </div>
   `;
   map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(legend);
