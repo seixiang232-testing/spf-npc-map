@@ -160,7 +160,7 @@ function initMap() {
     infoWindow.open(map);
   });
 
-  estLayer.addListener("mouseover", () => {
+  estLayer.addListener("mouseover", e => {
     map.getDiv().style.cursor = "pointer";
     const props = e.feature;
     hoverInfoWindow.setContent(buildEstablishmentContent(props));
