@@ -108,6 +108,11 @@ function initMap() {
   const tooltip = document.getElementById("hoverTooltip");
   let clickedFeature = null;
   let hoveredFeature = null;
+
+  const overlay = new google.maps.OverlayView();
+  overlay.onAdd = function() {};
+  overlay.draw = function() {};
+  overlay.setMap(map);
   
   map.addListener("bounds_changed", () => {
     if (tooltip.style.display === "block" && currentFeature) {
@@ -209,13 +214,11 @@ function initMap() {
     tooltip.style.display = "block";
 
     // Convert LatLng to pixel position
-    const proj = map.getProjection();
+    const proj = overlay.getProjection(); // Use overlay
     if (proj) {
       const point = proj.fromLatLngToDivPixel(e.latLng);
-  
-      // Center horizontally above the circle, with 8px gap
       const left = point.x - tooltip.offsetWidth / 2;
-      const top = point.y - tooltip.offsetHeight - 8;
+      const top = point.y - tooltip.offsetHeight - 8; // 8px above circle
   
       tooltip.style.left = `${left}px`;
       tooltip.style.top = `${top}px`;
