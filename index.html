@@ -29,6 +29,10 @@
       vertical-align: middle;
     }
 
+    .gm-style-iw {
+      pointer-events: none;
+    }
+
     .npc-boundary { background: #0047AB; } /* Blue */
     .npc { background: #0047AB; border-radius: 50%; } /* Blue */
     .npp { background: #4CAF50; border-radius: 50%; } /* Green */
@@ -95,8 +99,6 @@ function initMap() {
   const hoverInfoWindow = new google.maps.InfoWindow({
     disableAutoPan: true
   });
-  let hoveredFeature = null;
-  let hoverCloseTimer = null;
 
   // NPC POLYGON LAYER
   const npcLayer = new google.maps.Data({ map });
@@ -176,14 +178,6 @@ function initMap() {
   });
 
   estLayer.addListener("mouseover", e => {
-    // cancel pending close
-    if (hoverCloseTimer) {
-      clearTimeout(hoverCloseTimer);
-      hoverCloseTimer = null;
-    }
-    // same feature → do nothing
-    if (hoveredFeature === e.feature) return;
-    hoveredFeature = e.feature;
     map.getDiv().style.cursor = "pointer";
     
     const props = e.feature;
@@ -193,12 +187,8 @@ function initMap() {
   });
 
   estLayer.addListener("mouseout", () => {
-    // delay close to prevent flicker
-    hoverCloseTimer = setTimeout(() => {
-      map.getDiv().style.cursor = "";
-      hoverInfoWindow.close();
-      hoveredFeature = null;
-    }, 120);
+    map.getDiv().style.cursor = "";
+    hoverInfoWindow.close();
   });
 
   // TOGGLE CONTROLS
