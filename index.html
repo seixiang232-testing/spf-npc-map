@@ -29,8 +29,16 @@
       vertical-align: middle;
     }
 
-    .gm-style-iw {
+    #hoverTooltip {
+      position: fixed;
       pointer-events: none;
+      background: white;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 9999;
     }
 
     .npc-boundary { background: #0047AB; } /* Blue */
@@ -87,6 +95,7 @@
 
 <body>
 <div id="map"></div>
+<div id="hoverTooltip"></div>
 
 <script>
 function initMap() {
@@ -96,10 +105,13 @@ function initMap() {
   });
   const bounds = new google.maps.LatLngBounds();
   const infoWindow = new google.maps.InfoWindow();
-  const hoverInfoWindow = new google.maps.InfoWindow({
-    disableAutoPan: true
+  const tooltip = document.getElementById("hoverTooltip");
+  
+  map.addListener("mousemove", e => {
+    tooltip.style.left = e.domEvent.clientX + 12 + "px";
+    tooltip.style.top = e.domEvent.clientY + 12 + "px";
   });
-
+  
   // NPC POLYGON LAYER
   const npcLayer = new google.maps.Data({ map });
   const NPC_GEOJSON_PROXY_URL = "https://npc-geojson-proxy.seixiang232.workers.dev/";
@@ -126,18 +138,18 @@ function initMap() {
     infoWindow.open(map);
   });
 
-  npcLayer.addListener("mouseover", e => {
-    map.getDiv().style.cursor = "pointer";
-    const props = e.feature;
-    hoverInfoWindow.setContent(buildNPCBoundaryPopUpContent(props));
-    hoverInfoWindow.setPosition(e.latLng);
-    hoverInfoWindow.open(map);
-  });
+  // npcLayer.addListener("mouseover", e => {
+  //   map.getDiv().style.cursor = "pointer";
+  //   const props = e.feature;
+  //   hoverInfoWindow.setContent(buildNPCBoundaryPopUpContent(props));
+  //   hoverInfoWindow.setPosition(e.latLng);
+  //   hoverInfoWindow.open(map);
+  // });
 
-  npcLayer.addListener("mouseout", () => {
-    map.getDiv().style.cursor = "";
-    hoverInfoWindow.close();
-  });
+  // npcLayer.addListener("mouseout", () => {
+  //   map.getDiv().style.cursor = "";
+  //   hoverInfoWindow.close();
+  // });
 
   // ESTABLISHMENTS POINT LAYER
   const estLayer = new google.maps.Data({ map });
@@ -179,16 +191,14 @@ function initMap() {
 
   estLayer.addListener("mouseover", e => {
     map.getDiv().style.cursor = "pointer";
-    
     const props = e.feature;
-    hoverInfoWindow.setContent(buildEstablishmentPopUpContent(props));
-    hoverInfoWindow.setPosition(e.latLng);
-    hoverInfoWindow.open(map);
+    tooltip.innerHTML = buildEstablishmentPopUpContent(props);
+    tooltip.style.display = "block";
   });
 
   estLayer.addListener("mouseout", () => {
     map.getDiv().style.cursor = "";
-    hoverInfoWindow.close();
+    tooltip.style.display = "none";
   });
 
   // TOGGLE CONTROLS
