@@ -151,13 +151,13 @@ function initMap() {
 
     let fillColor = "#FFA500"; // default: orange
     if (isNPC) fillColor = "#0047AB";   // blue
-    else if (isNPP) fillColor = "#4CAF50"; // green
-    else if (isClosed) fillColor = "#D32F2F"; // red
+    if (isNPP) fillColor = "#4CAF50"; // green
+    if (isClosed) fillColor = "#D32F2F"; // red
     
     return {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: 5,
+        scale: 8,
         fillColor: fillColor,
         fillOpacity: 1,
         strokeWeight: 1,
