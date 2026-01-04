@@ -194,6 +194,18 @@ function initMap() {
     const props = e.feature;
     tooltip.innerHTML = buildEstablishmentPopUpContent(props);
     tooltip.style.display = "block";
+
+    // Convert LatLng to pixel position
+    const scale = Math.pow(2, map.getZoom());
+    const proj = map.getProjection();
+    if (proj) {
+      const point = proj.fromLatLngToPoint(e.latLng);
+      const mapDiv = map.getDiv();
+      const top = point.y * scale - tooltip.offsetHeight - 8; // 8px above
+      const left = point.x * scale - tooltip.offsetWidth / 2;  // center horizontally
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    }
   });
 
   estLayer.addListener("mouseout", () => {
