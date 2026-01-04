@@ -176,8 +176,6 @@ function initMap() {
   });
 
   estLayer.addListener("mouseover", e => {
-    map.getDiv().style.cursor = "pointer";
-
     // cancel pending close
     if (hoverCloseTimer) {
       clearTimeout(hoverCloseTimer);
@@ -186,6 +184,7 @@ function initMap() {
     // same feature → do nothing
     if (hoveredFeature === e.feature) return;
     hoveredFeature = e.feature;
+    map.getDiv().style.cursor = "pointer";
     
     const props = e.feature;
     hoverInfoWindow.setContent(buildEstablishmentPopUpContent(props));
@@ -194,10 +193,9 @@ function initMap() {
   });
 
   estLayer.addListener("mouseout", () => {
-    map.getDiv().style.cursor = "";
-
     // delay close to prevent flicker
     hoverCloseTimer = setTimeout(() => {
+      map.getDiv().style.cursor = "";
       hoverInfoWindow.close();
       hoveredFeature = null;
     }, 120);
