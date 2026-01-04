@@ -29,7 +29,8 @@
       vertical-align: middle;
     }
 
-    .npc { background: #0047AB; }
+    .npc-boundary { background: #0047AB; } /* Blue */
+    .npc { background: #0047AB; border-radius: 50%; } /* Blue */
     .npp { background: #4CAF50; border-radius: 50%; } /* Green */
     .est { background: #FFA500; border-radius: 50%; } /* Orange */
     .closed { background: #D32F2F; border-radius: 50%; } /* Red */
@@ -91,6 +92,9 @@ function initMap() {
   });
   const bounds = new google.maps.LatLngBounds();
   const infoWindow = new google.maps.InfoWindow();
+  const hoverInfoWindow = new google.maps.InfoWindow({
+    disableAutoPan: true
+  });
 
   // NPC POLYGON LAYER
   const npcLayer = new google.maps.Data({ map });
@@ -112,9 +116,8 @@ function initMap() {
   });
 
   npcLayer.addListener("click", e => {
-    infoWindow.setContent(
-      `<b>NPC:</b> ${e.feature.getProperty("NPC_NAME") || "NIL"}`
-    );
+    const props = e.feature;
+    infoWindow.setContent(buildNPCBoundaryPopUpContent(props));
     infoWindow.setPosition(e.latLng);
     infoWindow.open(map);
   });
@@ -129,14 +132,20 @@ function initMap() {
 
   estLayer.setStyle(feature => {
     const department = feature.getProperty("DEPARTMENT") || "";
+    const isNPC = department.includes("Neighbourhood Police Centre");
     const isNPP = department.includes("Neighbourhood Police Post");
     const isClosed = department.includes("Closed");
+
+    let fillColor = "#FFA500"; // default: orange
+    if (isNPC) fillColor = "#0047AB";   // blue
+    else if (isNPP) fillColor = "#4CAF50"; // green
+    else if (isClosed) fillColor = "#D32F2F"; // red
     
     return {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 5,
-        fillColor: isNPP ? "#4CAF50" : isClosed ? "#D32F2F" : "#FFA500",
+        fillColor: fillColor,
         fillOpacity: 1,
         strokeWeight: 1,
         strokeColor: "#ffffff"
@@ -146,57 +155,33 @@ function initMap() {
 
   estLayer.addListener("click", e => {
     const props = e.feature;
-    
-    infoWindow.setContent(`
-      <div class="info-window">
-        <h2>Establishment Info:</h2><br>
-        <table class="info-table">
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${[
-              ["OBJECTID_1", props.getProperty("OBJECTID_1")],
-              ["DEPARTMENT", props.getProperty("DEPARTMENT")],
-              ["TYPE", props.getProperty("TYPE")],
-              ["OPERATING_HOURS", props.getProperty("OPERATING_HOURS")],
-              ["TELEPHONE", props.getProperty("TELEPHONE")],
-              ["ALT_TELEPHONE_LINE", props.getProperty("ALT_TELEPHONE_LINE")],
-              ["BUILDING_NAME", props.getProperty("BUILDING_NAME")],
-              ["HSE_BLK_NO", props.getProperty("HSE_BLK_NO")],
-              ["UNIT", props.getProperty("UNIT")],
-              ["STREET_NAME", props.getProperty("STREET_NAME")],
-              ["POSTAL_CODE", props.getProperty("POSTAL_CODE")],
-              ["FAX", props.getProperty("FAX")],
-              ["INC_CRC", props.getProperty("INC_CRC")],
-              ["FMEL_UPD_D", props.getProperty("FMEL_UPD_D")]
-            ].map(([field, value]) => `
-              <tr>
-                <td>${field}</td>
-                <td>${value || 'NIL'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `);
+    infoWindow.setContent(buildEstablishmentContent(props));
     infoWindow.setPosition(e.latLng);
     infoWindow.open(map);
   });
-  
+
+  estLayer.addListener("mouseover", () => {
+    map.getDiv().style.cursor = "pointer";
+    const props = e.feature;
+    hoverInfoWindow.setContent(buildEstablishmentContent(props));
+    hoverInfoWindow.setPosition(e.latLng);
+    hoverInfoWindow.open(map);
+  });
+
+  estLayer.addListener("mouseout", () => {
+    map.getDiv().style.cursor = "";
+    hoverInfoWindow.close();
+  });
+
   // TOGGLE CONTROLS
   const toggleDiv = document.createElement("div");
   toggleDiv.className = "control-box";
   toggleDiv.innerHTML = `
-    <b>Filter</b>
+    <b>Filter</b><br>
     <label>
       <input type="checkbox" checked id="npcToggle">
       Show SPF NPC Boundaries
     </label><br>
-    
     <label>
       <input type="checkbox" checked id="estToggle">
       Show SPF Establishments
@@ -216,7 +201,10 @@ function initMap() {
   legend.innerHTML = `
     <b>Legend</b>
     <div class="legend-row">
-      <span class="color-box npc"></span> Neighbourhood Police Centres (NPCs) Boundary
+      <span class="color-box npc-boundary"></span> Neighbourhood Police Centres (NPCs) Boundary
+    </div>
+    <div class="legend-row">
+      <span class="color-box npc"></span> Neighbourhood Police Centres (NPCs)
     </div>
     <div class="legend-row">
       <span class="color-box npp"></span> Neighbourhood Police Post (NPP)
@@ -265,6 +253,78 @@ function collectLatLng(geometry, bounds) {
     });
     return;
   }
+}
+
+// NPC Boundary PopUp Content
+function buildNPCBoundaryPopUpContent(props) {
+  return `
+    <div class="info-window">
+      <h2>Establishment Info:</h2>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[
+            ["OBJECTID", props.getProperty("OBJECTID")],
+            ["NPC_NAME", props.getProperty("NPC_NAME")],
+            ["DIVISION", props.getProperty("DIVISION")],
+            ["DIV", props.getProperty("DIV")],
+            ["INC_CRC", props.getProperty("INC_CRC")],
+            ["FMEL_UPD_D", props.getProperty("FMEL_UPD_D")]
+          ].map(([field, value]) => `
+            <tr>
+              <td>${field}</td>
+              <td>${value || 'NIL'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `
+}
+
+// Establishment PopUp Content
+function buildEstablishmentPopUpContent(props) {
+  return `
+    <div class="info-window">
+      <h2>Establishment Info:</h2>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[
+            ["OBJECTID_1", props.getProperty("OBJECTID_1")],
+            ["DEPARTMENT", props.getProperty("DEPARTMENT")],
+            ["TYPE", props.getProperty("TYPE")],
+            ["OPERATING_HOURS", props.getProperty("OPERATING_HOURS")],
+            ["TELEPHONE", props.getProperty("TELEPHONE")],
+            ["ALT_TELEPHONE_LINE", props.getProperty("ALT_TELEPHONE_LINE")],
+            ["BUILDING_NAME", props.getProperty("BUILDING_NAME")],
+            ["HSE_BLK_NO", props.getProperty("HSE_BLK_NO")],
+            ["UNIT", props.getProperty("UNIT")],
+            ["STREET_NAME", props.getProperty("STREET_NAME")],
+            ["POSTAL_CODE", props.getProperty("POSTAL_CODE")],
+            ["FAX", props.getProperty("FAX")],
+            ["INC_CRC", props.getProperty("INC_CRC")],
+            ["FMEL_UPD_D", props.getProperty("FMEL_UPD_D")]
+          ].map(([field, value]) => `
+            <tr>
+              <td>${field}</td>
+              <td>${value || 'NIL'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `
 }
 
 window.initMap = initMap;
