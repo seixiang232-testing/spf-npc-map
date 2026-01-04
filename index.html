@@ -31,6 +31,50 @@
 
     .npc { background: #0047AB; }
     .est { background: #D32F2F; border-radius: 50%; }
+    
+    /* InfoWindow Table Styles */
+    .info-window {
+      max-height: 250px;
+      overflow-y: auto;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+    }
+  
+    .info-window b {
+      font-size: 14px;
+      margin-bottom: 5px;
+      display: block;
+    }
+  
+    .info-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 300px;
+      text-align: left;
+    }
+  
+    .info-table thead tr {
+      background-color: #f0f0f0;
+      position: sticky;
+      top: 0;
+    }
+  
+    .info-table th, .info-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+    }
+  
+    .info-table td:first-child {
+      font-weight: bold;
+    }
+  
+    .info-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  
+    .info-table tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
   </style>
 </head>
 
@@ -96,23 +140,38 @@ function initMap() {
     const props = e.feature;
     
     infoWindow.setContent(`
-      <div style="max-height: 250px; overflow-y: auto; font-size: 13px;">
-        <b>Establishment Info</b><br>
-        <table style="border-collapse: collapse; width: 100%;">
-          // <tr><td><b>OBJECTID_1</b></td><td>${props.getProperty("OBJECTID_1") || "NIL"}</td></tr>
-          <tr><td><b>DEPARTMENT</b></td><td>${props.getProperty("DEPARTMENT") || "NIL"}</td></tr>
-          <tr><td><b>TYPE</b></td><td>${props.getProperty("TYPE") || "NIL"}</td></tr>
-          <tr><td><b>OPERATING_HOURS</b></td><td>${props.getProperty("OPERATING_HOURS") || "NIL"}</td></tr>
-          <tr><td><b>TELEPHONE</b></td><td>${props.getProperty("TELEPHONE") || "NIL"}</td></tr>
-          <tr><td><b>ALT_TELEPHONE_LINE</b></td><td>${props.getProperty("ALT_TELEPHONE_LINE") || "NIL"}</td></tr>
-          <tr><td><b>BUILDING_NAME</b></td><td>${props.getProperty("BUILDING_NAME") || "NIL"}</td></tr>
-          <tr><td><b>HSE_BLK_NO</b></td><td>${props.getProperty("HSE_BLK_NO") || "NIL"}</td></tr>
-          <tr><td><b>UNIT</b></td><td>${props.getProperty("UNIT") || "NIL"}</td></tr>
-          <tr><td><b>STREET_NAME</b></td><td>${props.getProperty("STREET_NAME") || "NIL"}</td></tr>
-          <tr><td><b>POSTAL_CODE</b></td><td>${props.getProperty("POSTAL_CODE") || "NIL"}</td></tr>
-          <tr><td><b>FAX</b></td><td>${props.getProperty("FAX") || "NIL"}</td></tr>
-          <tr><td><b>INC_CRC</b></td><td>${props.getProperty("INC_CRC") || "NIL"}</td></tr>
-          <tr><td><b>FMEL_UPD_D</b></td><td>${props.getProperty("FMEL_UPD_D") || "NIL"}</td></tr>
+      <div class="info-window">
+        <b>Establishment Info</b>
+        <table class="info-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[
+              ["OBJECTID_1", props.getProperty("OBJECTID_1")],
+              ["DEPARTMENT", props.getProperty("DEPARTMENT")],
+              ["TYPE", props.getProperty("TYPE")],
+              ["OPERATING_HOURS", props.getProperty("OPERATING_HOURS")],
+              ["TELEPHONE", props.getProperty("TELEPHONE")],
+              ["ALT_TELEPHONE_LINE", props.getProperty("ALT_TELEPHONE_LINE")],
+              ["BUILDING_NAME", props.getProperty("BUILDING_NAME")],
+              ["HSE_BLK_NO", props.getProperty("HSE_BLK_NO")],
+              ["UNIT", props.getProperty("UNIT")],
+              ["STREET_NAME", props.getProperty("STREET_NAME")],
+              ["POSTAL_CODE", props.getProperty("POSTAL_CODE")],
+              ["FAX", props.getProperty("FAX")],
+              ["INC_CRC", props.getProperty("INC_CRC")],
+              ["FMEL_UPD_D", props.getProperty("FMEL_UPD_D")]
+            ].map(([field, value]) => `
+              <tr>
+                <td>${field}</td>
+                <td>${value || 'NIL'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
         </table>
       </div>
     `);
