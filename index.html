@@ -111,7 +111,16 @@ function initMap() {
     tooltip.style.left = e.domEvent.clientX + 12 + "px";
     tooltip.style.top = e.domEvent.clientY + 12 + "px";
   });
-  
+
+  map.addListener("bounds_changed", () => {
+    if (tooltip.style.display === "block" && currentFeature) {
+      const point = map.getProjection().fromLatLngToPoint(currentFeatureLatLng);
+      const scale = Math.pow(2, map.getZoom());
+      tooltip.style.left = `${point.x * scale - tooltip.offsetWidth / 2}px`;
+      tooltip.style.top = `${point.y * scale - tooltip.offsetHeight - 8}px`;
+    }
+  });
+
   // NPC POLYGON LAYER
   const npcLayer = new google.maps.Data({ map });
   const NPC_GEOJSON_PROXY_URL = "https://npc-geojson-proxy.seixiang232.workers.dev/";
