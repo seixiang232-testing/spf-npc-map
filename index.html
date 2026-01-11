@@ -213,7 +213,7 @@
       div.innerHTML = `
         <b>Filter</b><br />
         <label><input type="checkbox" checked /> NPC Boundaries</label><br />
-        <label><input type="checkbox" checked /> Establishments</label>
+        <label><input type="checkbox" checked /> NPP</label>
       `;
 
       const [npcToggle, estToggle] = div.querySelectorAll("input");
@@ -296,7 +296,7 @@
     function buildTable(title, rows) {
       return `
         <div class="info-window">
-          <b>${title}</b>
+          <u><h2>${title}:</h2></u>
           <table class="info-table">
             <tbody>
               ${rows.map(([k, v]) => `
@@ -313,10 +313,12 @@
       for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
       }
-    
+      
       const hue = Math.abs(hash) % 360;
-    
-      return `hsl(${hue}, 70%, 55%)`;
+      const saturation = 60 + (Math.abs(hash) % 30); // 60–89%
+      const lightness = 45 + (Math.abs(hash >> 3) % 20); // 45–64%
+      
+      return `hsl(${hue}, ${saturation}, ${lightness})`;
     }
 
     window.initMap = initMap;
