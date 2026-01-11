@@ -407,7 +407,7 @@
     
       if (count === 1) {
         // Single point → center and set a default zoom
-        map.setCenter(bounds.getCenter());
+        map.panTo(bounds.getCenter()); // smoothly moves the map center
         // map.setZoom(10); // adjust zoom as needed
       } else {
         // Polygon or multiple points → fit bounds
