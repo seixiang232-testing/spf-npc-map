@@ -206,11 +206,10 @@
       });
 
       layer.addListener("mousemove", e => {
-        if (!tooltip || !overlay.getProjection()) return;
-      
         const projection = overlay.getProjection();
+        if (!tooltip || !projection) return;
+        
         const point = projection.fromLatLngToDivPixel(e.latLng);
-      
         const offsetY = 12; // space above marker
       
         tooltip.style.left = `${point.x}px`;
@@ -265,8 +264,24 @@
       const overlay = new google.maps.OverlayView();
       
       overlay.onAdd = function () {};
-      overlay.draw = function () {};
-      overlay.onRemove = function () {};
+      overlay.draw = function () {
+        if (!overlay.listenersSet) {
+          overlay.listenersSet = true;
+    
+          estLayer.addListener("mousemove", e => {
+            if (!tooltip) return;
+    
+            const projection = overlay.getProjection();
+            if (!projection) return;
+    
+            const point = projection.fromLatLngToDivPixel(e.latLng);
+            const offsetY = 12; // above marker
+    
+            tooltip.style.left = `${point.x}px`;
+            tooltip.style.top = `${point.y - tooltip.offsetHeight - offsetY}px`;
+          });
+        }
+      };
       
       overlay.setMap(map);
       return overlay;
