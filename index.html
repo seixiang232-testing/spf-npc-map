@@ -48,7 +48,7 @@
     }
     
     #hoverTooltip {
-      position: fixed;
+      position: absolute;
       pointer-events: none;
       background: #ffffff;
       padding: 8px 10px;
@@ -58,6 +58,7 @@
       border: 1px solid #ddd;
       display: none;
       z-index: 9999;
+      transform: translateX(-50%);
     }
 
     /* ---------- InfoWindow ---------- */
@@ -206,13 +207,16 @@
 
       layer.addListener("mousemove", e => {
         if (!tooltip || !overlay.getProjection()) return;
-        const domEvent = e.domEvent;
-        if (!domEvent) return;
-
-        tooltip.style.left = `${domEvent.clientX + 12}px`;
-        tooltip.style.top  = `${domEvent.clientY - 12}px`;
+      
+        const projection = overlay.getProjection();
+        const point = projection.fromLatLngToDivPixel(e.latLng);
+      
+        const offsetY = 12; // space above marker
+      
+        tooltip.style.left = `${point.x}px`;
+        tooltip.style.top  = `${point.y - tooltip.offsetHeight - offsetY}px`;
       });
-
+      
       layer.addListener("mouseout", () => {
         map.getDiv().style.cursor = "";
         tooltip.style.display = "none";
