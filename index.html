@@ -105,7 +105,7 @@
       map = new google.maps.Map(document.getElementById("map"), {
         center: MAP_CENTER,
         zoom: 11,
-        mapId: "1965133852f3b85335e7e82b"
+        // mapId: "1965133852f3b85335e7e82b"
       });
 
       clickInfoWindow = new google.maps.InfoWindow();
@@ -158,6 +158,22 @@
         clickInfoWindow.setContent(buildNpcContent(e.feature));
         clickInfoWindow.setPosition(e.latLng);
         clickInfoWindow.open(map);
+      });
+
+      layer.addListener("mouseover", e => {
+        map.getDiv().style.cursor = "pointer";
+        hoverInfoWindow.setContent(buildNpcHoverContent(e.feature));
+        hoverInfoWindow.setPosition(e.latLng);
+        hoverInfoWindow.open(map);
+      });
+
+      layer.addListener("mousemove", e => {
+        hoverInfoWindow.setPosition(e.latLng);
+      });
+
+      layer.addListener("mouseout", () => {
+        map.getDiv().style.cursor = "";
+        hoverInfoWindow.close();
       });
 
       return layer;
