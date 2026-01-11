@@ -230,7 +230,6 @@
         clickInfoWindow.open(map);
         isClickInfoWindowOpen = true;
 
-        // Fit map to the clicked NPC boundary
         fitFeatureBounds(e.feature);
       });
       
@@ -393,18 +392,27 @@
       
       return `hsl(${hue}, 70%, 55%)`;
     }
-
+    
     function fitFeatureBounds(feature) {
       const geometry = feature.getGeometry();
       if (!geometry) return;
-      
+    
       const bounds = new google.maps.LatLngBounds();
-      
+      let count = 0;
+    
       geometry.forEachLatLng(latLng => {
         bounds.extend(latLng);
+        count++;
       });
-      
-      map.fitBounds(bounds);
+    
+      if (count === 1) {
+        // Single point → center and set a default zoom
+        map.setCenter(bounds.getCenter());
+        map.setZoom(10); // adjust zoom as needed
+      } else {
+        // Polygon or multiple points → fit bounds
+        map.fitBounds(bounds);
+      }
     }
     
     window.initMap = initMap;
