@@ -48,7 +48,7 @@
     }
     
     #hoverTooltip {
-      position: absolute;
+      position: fixed;
       pointer-events: none;
       background: #ffffff;
       padding: 8px 10px;
@@ -206,10 +206,11 @@
 
       layer.addListener("mousemove", e => {
         if (!tooltip || !overlay.getProjection()) return;
-        
-        const point = overlay.getProjection().fromLatLngToDivPixel(e.latLng);
-        tooltip.style.left = `${point.x + 12}px`;
-        tooltip.style.top = `${point.y - 12}px`;
+        const domEvent = e.domEvent;
+        if (!domEvent) return;
+
+        tooltip.style.left = `${domEvent.clientX + 12}px`;
+        tooltip.style.top  = `${domEvent.clientY - 12}px`;
       });
 
       layer.addListener("mouseout", () => {
