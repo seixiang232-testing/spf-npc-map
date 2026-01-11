@@ -186,12 +186,12 @@
         map.getDiv().style.cursor = "pointer";
 
         // Calculate an offset to move the InfoWindow higher
-        const offset = new google.maps.Point(0, -50); // Move 50px above the feature
+        const offset = new google.maps.Point(0, -8); // Move exactly above the icon
         
         hoverInfoWindow.setContent(buildEstHoverContent(e.feature));
         hoverInfoWindow.setPosition({
-          lat: e.latLng.lat() + (offset.lat() || 0),
-          lng: e.latLng.lng() + (offset.lng() || 0)
+          lat: e.latLng.lat() + (offset.y || 0),
+          lng: e.latLng.lng() + (offset.x || 0)
         });
         hoverInfoWindow.open(map);
       });
