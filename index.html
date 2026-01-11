@@ -190,8 +190,8 @@
         
         hoverInfoWindow.setContent(buildEstHoverContent(e.feature));
         hoverInfoWindow.setPosition({
-          lat: e.latLng.lat(),
-          lng: e.latLng.lng()
+          lat: e.latLng.lat() + (offset.lat() || 0),
+          lng: e.latLng.lng() + (offset.lng() || 0)
         });
         hoverInfoWindow.open(map);
       });
