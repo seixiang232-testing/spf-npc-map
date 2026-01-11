@@ -190,9 +190,8 @@
         clickInfoWindow.open(map);
         isClickInfoWindowOpen = true;
 
-        // --- Zoom & Pan ---
-        map.setZoom(15);
-        map.panTo(e.latLng);
+        // Fit map to the clicked NPC boundary
+        fitFeatureBounds(e.feature);
       });
 
       layer.addListener("mouseover", e => {
@@ -231,10 +230,8 @@
         clickInfoWindow.open(map);
         isClickInfoWindowOpen = true;
 
-        // --- Zoom & Pan ---
-        const bounds = new google.maps.LatLngBounds();
-        e.feature.getGeometry().forEachLatLng(latlng => bounds.extend(latlng));
-        map.fitBounds(bounds); // automatically pans & zooms to fit
+        // Fit map to the clicked NPC boundary
+        fitFeatureBounds(e.feature);
       });
       
       layer.addListener("mouseover", e => {
@@ -397,6 +394,19 @@
       return `hsl(${hue}, 70%, 55%)`;
     }
 
+    function fitFeatureBounds(feature) {
+      const geometry = feature.getGeometry();
+      if (!geometry) return;
+      
+      const bounds = new google.maps.LatLngBounds();
+      
+      geometry.forEachLatLng(latLng => {
+        bounds.extend(latLng);
+      });
+      
+      map.fitBounds(bounds);
+    }
+    
     window.initMap = initMap;
   </script>
 
