@@ -41,14 +41,21 @@
     .error { background: #D32F2F; border-radius: 50%; }
 
     /* ---------- Hover Tooltip ---------- */
+    .hover-window {
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+    
     #hoverTooltip {
       position: fixed;
       pointer-events: none;
       background: #ffffff;
-      padding: 6px 8px;
-      border-radius: 4px;
+      padding: 8px 10px;
+      border-radius: 6px;
       font-size: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      border: 1px solid #ddd;
       display: none;
       z-index: 9999;
     }
@@ -189,12 +196,14 @@
         if (e.feature === clickedFeature) return;
 
         map.getDiv().style.cursor = "pointer";
-        tooltip.innerHTML = buildEstContent(e.feature);
+        tooltip.innerHTML = buildEstHoverContent(e.feature);
         tooltip.style.display = "block";
+      });
 
+      layer.addListener("mousemove", e => {
         const point = overlay.getProjection().fromLatLngToDivPixel(e.latLng);
-        tooltip.style.left = `${point.x - tooltip.offsetWidth / 2}px`;
-        tooltip.style.top = `${point.y - tooltip.offsetHeight - 8}px`;
+        tooltip.style.left = `${point.x + 12}px`;
+        tooltip.style.top = `${point.y - 12}px`;
       });
 
       layer.addListener("mouseout", () => {
@@ -295,6 +304,15 @@
       ]);
     }
 
+    function buildEstHoverContent(feature) {
+      return `
+        <div class="hover-window">
+          <b>${feature.getProperty("DEPARTMENT") || "Error"}</b><br/>
+          ${feature.getProperty("OPERATING_HOURS") || "NIL"}
+        </div>
+      `;
+    }
+    
     function buildTable(title, rows) {
       return `
         <div class="info-window">
