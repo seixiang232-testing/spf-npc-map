@@ -128,12 +128,9 @@
       });
 
       infoWindow = new google.maps.InfoWindow();
-      
-      // ✅ CREATE tooltip AFTER map exists
       tooltip = document.createElement("div");
       tooltip.id = "hoverTooltip";
-      document.getElementById("map").appendChild(tooltip);
-
+      
       const overlay = createOverlay(map);
 
       const npcLayer = createNpcLayer(map);
@@ -162,7 +159,7 @@
       
       layer.setStyle(feature => {
         const name = feature.getProperty("NPC_NAME");
-    
+        
         return {
           fillColor: stringToColor(name),
           fillOpacity: 0.55,
@@ -203,17 +200,12 @@
         map.getDiv().style.cursor = "pointer";
         tooltip.innerHTML = buildEstHoverContent(e.feature);
         tooltip.style.display = "block";
+
+        positionTooltip(e.latLng);
       });
 
       layer.addListener("mousemove", e => {
-        const projection = overlay.getProjection();
-        if (!tooltip || !projection) return;
-        
-        const point = projection.fromLatLngToDivPixel(e.latLng);
-        const offsetY = 12; // space above marker
-      
-        tooltip.style.left = `${point.x}px`;
-        tooltip.style.top  = `${point.y - tooltip.offsetHeight - offsetY}px`;
+        positionTooltip(e.latLng);
       });
       
       layer.addListener("mouseout", () => {
@@ -263,25 +255,14 @@
     function createOverlay(map) {
       const overlay = new google.maps.OverlayView();
       
-      overlay.onAdd = function () {};
-      overlay.draw = function () {
-        if (!overlay.listenersSet) {
-          overlay.listenersSet = true;
-    
-          estLayer.addListener("mousemove", e => {
-            if (!tooltip) return;
-    
-            const projection = overlay.getProjection();
-            if (!projection) return;
-    
-            const point = projection.fromLatLngToDivPixel(e.latLng);
-            const offsetY = 12; // above marker
-    
-            tooltip.style.left = `${point.x}px`;
-            tooltip.style.top = `${point.y - tooltip.offsetHeight - offsetY}px`;
-          });
-        }
+      overlay.onAdd = function () {
+        this.layer = document.createElement("div");
+        this.layer.style.position = "absolute";
+        this.getPanes().overlayMouseTarget.appendChild(this.layer);
+        this.layer.appendChild(tooltip);
       };
+      overlay.draw = function () {};
+      overlay.onRemove = function () {};
       
       overlay.setMap(map);
       return overlay;
@@ -368,6 +349,20 @@
       const hue = (Math.abs(hash) % (360 / STEP)) * STEP;
       
       return `hsl(${hue}, 70%, 55%)`;
+    }
+
+    function positionTooltip(latLng) {
+      const projection = overlay.getProjection();
+      if (!projection) return;
+    
+      const point = projection.fromLatLngToDivPixel(latLng);
+      const offsetY = 12;
+    
+      let top = point.y - tooltip.offsetHeight - offsetY;
+      if (top < 10) top = point.y + offsetY; // prevent clipping
+    
+      tooltip.style.left = `${point.x}px`;
+      tooltip.style.top  = `${top}px`;
     }
 
     window.initMap = initMap;
