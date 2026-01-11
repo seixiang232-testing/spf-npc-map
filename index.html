@@ -48,7 +48,7 @@
     }
     
     #hoverTooltip {
-      position: fixed;
+      position: absolute;
       pointer-events: none;
       background: #ffffff;
       padding: 8px 10px;
@@ -97,8 +97,9 @@
 </head>
 
 <body>
-  <div id="map"></div>
-  <div id="hoverTooltip"></div>
+  <div id="map">
+    <div id="hoverTooltip"></div>
+  </div>
   <script>
     /* =====================
        Constants
@@ -201,6 +202,8 @@
       });
 
       layer.addListener("mousemove", e => {
+        if (!overlay.getProjection()) return;
+        
         const point = overlay.getProjection().fromLatLngToDivPixel(e.latLng);
         tooltip.style.left = `${point.x + 12}px`;
         tooltip.style.top = `${point.y - 12}px`;
@@ -252,7 +255,11 @@
     ====================== */
     function createOverlay(map) {
       const overlay = new google.maps.OverlayView();
-      overlay.onAdd = overlay.draw = () => {};
+      
+      overlay.onAdd = function () {};
+      overlay.draw = function () {};
+      overlay.onRemove = function () {};
+      
       overlay.setMap(map);
       return overlay;
     }
