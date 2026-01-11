@@ -40,18 +40,19 @@
     .closed { background: #FFA500; border-radius: 50%; }
     .error { background: #D32F2F; border-radius: 50%; }
 
-    /* Make hover InfoWindow ignore mouse events */
-    .gm-style .gm-style-iw-hover {
+    /* ---------- Hover Tooltip ---------- */
+    #hover-tooltip {
+      position: absolute;
       pointer-events: none;
-    }
-
-    /* Hide close (X) button for hover InfoWindow */
-    .gm-style .gm-style-iw-hover + button,
-    .gm-style .gm-ui-hover-effect {
-      display: none !important;
-      box-shadow: none !important;
       background: rgba(255, 255, 255, 0.95);
+      padding: 6px 8px;
       border-radius: 6px;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1000;
+      transform: translate(12px, 12px);
+      transition: opacity 0.12s ease;
     }
 
     /* ---------- InfoWindow ---------- */
@@ -92,6 +93,7 @@
 
 <body>
   <div id="map"></div>
+  <div id="hover-tooltip"></div>
   <script>
     /* =====================
        Constants
@@ -108,10 +110,9 @@
 
     let map;
     let clickInfoWindow;
-    let hoverInfoWindow;
-    // let hoverMarker;
     let clickedFeature = null;
     let isClickInfoWindowOpen = false;
+    let tooltip;
 
     /* =====================
        Init Map
@@ -120,7 +121,6 @@
       map = new google.maps.Map(document.getElementById("map"), {
         center: MAP_CENTER,
         zoom: 11,
-        // mapId: "1965133852f3b85335e7e82b"
       });
 
       clickInfoWindow = new google.maps.InfoWindow();
@@ -128,15 +128,7 @@
         isClickInfoWindowOpen = false;
         clickedFeature = null;
       });
-      hoverInfoWindow = new google.maps.InfoWindow({
-        disableAutoPan: true
-      });
-      // hoverMarker = new google.maps.marker.AdvancedMarkerElement({
-      //   map,
-      //   position: MAP_CENTER,
-      //   zIndex: 1000
-      // });
-      // hoverMarker.map = null;
+      tooltip = document.getElementById("hover-tooltip");
       
       const npcLayer = createNpcLayer(map);
       const estLayer = createEstablishmentLayer(map);
@@ -175,7 +167,7 @@
       
       layer.addListener("click", e => {
         clickedFeature = e.feature;
-        hoverInfoWindow.close();
+        hideTooltip();
         clickInfoWindow.setContent(buildNpcContent(e.feature));
         clickInfoWindow.setPosition(e.latLng);
         clickInfoWindow.open(map);
@@ -184,25 +176,18 @@
 
       layer.addListener("mouseover", e => {
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
-        
         map.getDiv().style.cursor = "pointer";
-        hoverInfoWindow.setContent(buildNpcHoverContent(e.feature));
-        hoverInfoWindow.setPosition(e.latLng);
-        hoverInfoWindow.open(map);
+        showTooltip(buildNpcHoverContent(e.feature), e);
       });
 
       layer.addListener("mousemove", e => {
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
-        
-        hoverInfoWindow.setPosition({
-          lat: e.latLng.lat() + 0.00015,
-          lng: e.latLng.lng()
-        });
+        moveTooltip(e);
       });
 
       layer.addListener("mouseout", () => {
         map.getDiv().style.cursor = "";
-        hoverInfoWindow.close();
+        hideTooltip();
       });
 
       return layer;
@@ -219,31 +204,22 @@
 
       layer.addListener("click", e => {
         clickedFeature = e.feature;
-        hoverInfoWindow.close();
+        hideTooltip();
         clickInfoWindow.setContent(buildEstContent(e.feature));
         clickInfoWindow.setPosition(e.latLng);
         clickInfoWindow.open(map);
+        isClickInfoWindowOpen = true;
       });
       
       layer.addListener("mouseover", e => {
-        if (e.feature === clickedFeature) return;
-        
+        if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
         map.getDiv().style.cursor = "pointer";
-
-        // Calculate an offset to move the InfoWindow higher
-        const offset = new google.maps.Point(0, -8); // Move exactly above the icon
-        
-        hoverInfoWindow.setContent(buildEstHoverContent(e.feature));
-        hoverInfoWindow.setPosition({
-          lat: e.latLng.lat() + (offset.y || 0),
-          lng: e.latLng.lng() + (offset.x || 0)
-        });
-        hoverInfoWindow.open(map);
+        showTooltip(buildEstHoverContent(e.feature), e);
       });
       
       layer.addListener("mouseout", () => {
         map.getDiv().style.cursor = "";
-        hoverInfoWindow.close();
+        hideTooltip();
       });
 
       return layer;
@@ -258,7 +234,7 @@
       div.innerHTML = `
         <b>Filter</b><br />
         <label><input type="checkbox" checked /> NPC Boundaries</label><br />
-        <label><input type="checkbox" checked /> NPP</label>
+        <label><input type="checkbox" checked /> NPP Locations</label>
       `;
 
       const [npcToggle, estToggle] = div.querySelectorAll("input");
@@ -315,7 +291,7 @@
 
     function buildNpcHoverContent(feature) {
       return `
-        <div class="info-window gm-style-iw-hover">
+        <div class="info-window">
           <b>${feature.getProperty("NPC_NAME") || "Error"}</b><br/>
           ${feature.getProperty("DIV") || "NIL"}
         </div>
@@ -343,7 +319,7 @@
 
     function buildEstHoverContent(feature) {
       return `
-        <div class="info-window gm-style-iw-hover">
+        <div class="info-window">
           <b>${feature.getProperty("DEPARTMENT") || "Error"}</b><br/>
           ${feature.getProperty("OPERATING_HOURS") || "NIL"}
         </div>
@@ -365,6 +341,21 @@
       `;
     }
 
+    function showTooltip(html, e) {
+      tooltip.innerHTML = html;
+      tooltip.style.display = "block";
+      moveTooltip(e);
+    }
+    
+    function moveTooltip(e) {
+      tooltip.style.left = e.domEvent.clientX + "px";
+      tooltip.style.top = e.domEvent.clientY + "px";
+    }
+    
+    function hideTooltip() {
+      tooltip.style.display = "none";
+    }
+    
     function stringToColor(str) {
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
@@ -382,7 +373,7 @@
 
   <!-- Google Maps API -->
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&callback=initMap&libraries=marker&loading=async"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&callback=initMap&loading=async"
     async defer
   ></script>
 </body>
