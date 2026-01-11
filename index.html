@@ -107,9 +107,9 @@
       });
 
       clickInfoWindow = new google.maps.InfoWindow();
-      hoverInfoWindow = new google.maps.InfoWindow(
+      hoverInfoWindow = new google.maps.InfoWindow({
         disableAutoPan: true
-      );
+      });
       
       const npcLayer = createNpcLayer(map);
       const estLayer = createEstablishmentLayer(map);
