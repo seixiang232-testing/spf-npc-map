@@ -185,7 +185,7 @@
         
         map.getDiv().style.cursor = "pointer";
 
-        hoverMarker.position = offsetLatLng(e.latLng, 40);
+        hoverMarker.position = e.latLng;
         hoverMarker.map = map;
         
         hoverInfoWindow.setContent(buildEstHoverContent(e.feature));
