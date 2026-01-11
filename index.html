@@ -95,6 +95,7 @@
     let map;
     let clickInfoWindow;
     let hoverInfoWindow;
+    let hoverMarker;
     let clickedFeature = null;
 
     /* =====================
@@ -109,6 +110,12 @@
       clickInfoWindow = new google.maps.InfoWindow();
       hoverInfoWindow = new google.maps.InfoWindow({
         disableAutoPan: true
+      });
+      hoverMarker = new google.maps.Marker({
+        map,
+        visible: false,
+        clickable: false,
+        zIndex: google.maps.Marker.MAX_ZINDEX + 1
       });
       
       const npcLayer = createNpcLayer(map);
@@ -171,20 +178,27 @@
         clickInfoWindow.setPosition(e.latLng);
         clickInfoWindow.open(map);
       });
-
+      
       layer.addListener("mouseover", e => {
         if (e.feature === clickedFeature) return;
-
+        
         map.getDiv().style.cursor = "pointer";
 
+        hoverMarker.setPosition(offsetLatLng(e.latLng, 40));
+        hoverMarker.setVisible(true);
+        
         hoverInfoWindow.setContent(buildEstHoverContent(e.feature));
-        hoverInfoWindow.setPosition(e.latLng);
-        hoverInfoWindow.open(map);
+        hoverInfoWindow.open({
+          map,
+          anchor: hoverMarker,
+          shouldFocus: false
+        });
       });
       
       layer.addListener("mouseout", () => {
         map.getDiv().style.cursor = "";
         hoverInfoWindow.close();
+        hoverMarker.setVisible(false);
       });
 
       return layer;
