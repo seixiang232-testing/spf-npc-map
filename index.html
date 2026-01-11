@@ -97,9 +97,7 @@
 </head>
 
 <body>
-  <div id="map">
-    <div id="hoverTooltip"></div>
-  </div>
+  <div id="map"></div>
   <script>
     /* =====================
        Constants
@@ -129,7 +127,11 @@
       });
 
       infoWindow = new google.maps.InfoWindow();
-      tooltip = document.getElementById("hoverTooltip");
+      
+      // ✅ CREATE tooltip AFTER map exists
+      tooltip = document.createElement("div");
+      tooltip.id = "hoverTooltip";
+      document.getElementById("map").appendChild(tooltip);
 
       const overlay = createOverlay(map);
 
@@ -194,6 +196,7 @@
       });
 
       layer.addListener("mouseover", e => {
+        if (!tooltip) return;
         if (e.feature === clickedFeature) return;
 
         map.getDiv().style.cursor = "pointer";
@@ -202,7 +205,7 @@
       });
 
       layer.addListener("mousemove", e => {
-        if (!overlay.getProjection()) return;
+        if (!tooltip || !overlay.getProjection()) return;
         
         const point = overlay.getProjection().fromLatLngToDivPixel(e.latLng);
         tooltip.style.left = `${point.x + 12}px`;
