@@ -206,6 +206,8 @@
       
       // Initialize Places service
       placesService = new google.maps.places.PlacesService(map);
+      // Initialize Autocomplete service for better search
+      autocompleteService = new google.maps.places.AutocompleteService();
       
       const npcLayer = createNpcLayer(map);
       const estLayer = createEstablishmentLayer(map);
@@ -270,15 +272,41 @@
     }
 
     function performSearch(query, resultsContainer) {
-      // Search places using Google Places API
+      // First try autocomplete for better suggestions
+      const autocompleteService = new google.maps.places.AutocompleteService();
+      
+      const request = {
+        input: query,
+        componentRestrictions: { country: 'sg' }, // Restrict to Singapore
+        types: ['establishment', 'geocode'] // Include both places and addresses
+      };
+      
+      autocompleteService.getPlacePredictions(request, (predictions, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+          const results = predictions.slice(0, 8).map(prediction => ({
+            type: "prediction",
+            title: prediction.structured_formatting.main_text,
+            subtitle: prediction.structured_formatting.secondary_text || prediction.description,
+            placeId: prediction.place_id
+          }));
+          
+          displaySearchResults(results, resultsContainer);
+        } else {
+          // Fallback to text search if autocomplete fails
+          fallbackTextSearch(query, resultsContainer);
+        }
+      });
+    }
+    
+    function fallbackTextSearch(query, resultsContainer) {
       const request = {
         query: query,
-        bounds: map.getBounds(),
+        // Remove bounds restriction for wider search
         fields: ["name", "geometry", "formatted_address", "place_id"]
       };
       
       placesService.textSearch(request, (places, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
+        if (status === google.maps.places.PlacesServiceStatus.OK && places) {
           const results = places.slice(0, 8).map(place => ({
             type: "place",
             title: place.name,
@@ -297,7 +325,7 @@
       container.innerHTML = "";
       
       if (results.length === 0) {
-        container.innerHTML = '<div class="search-result-item">No results found</div>';
+        container.innerHTML = '<div class="search-result-item" style="color: #666;">No results found. Try a different search term.</div>';
         container.style.display = "block";
         return;
       }
@@ -306,8 +334,8 @@
         const item = document.createElement("div");
         item.className = "search-result-item";
         item.innerHTML = `
-          <div class="result-title">${result.title}</div>
-          <div class="result-subtitle">${result.subtitle}</div>
+          <div class="result-title">${escapeHtml(result.title)}</div>
+          <div class="result-subtitle">${escapeHtml(result.subtitle)}</div>
         `;
         
         item.addEventListener("click", () => {
@@ -321,9 +349,33 @@
       
       container.style.display = "block";
     }
-
+    
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
     function handleSearchResultClick(result) {
-      const place = result.place;
+      if (result.type === "prediction") {
+        // Get place details from place ID
+        const request = {
+          placeId: result.placeId,
+          fields: ["name", "geometry", "formatted_address"]
+        };
+        
+        placesService.getDetails(request, (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            navigateToPlace(place);
+          }
+        });
+      } else {
+        navigateToPlace(result.place);
+      }
+    }
+    
+    function navigateToPlace(place) {
       const location = place.geometry.location;
       
       map.panTo(location);
