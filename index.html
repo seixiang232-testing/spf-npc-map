@@ -24,6 +24,62 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
+    /* ---------- Search Box ---------- */
+    .search-container {
+      background: #ffffff;
+      margin: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      width: 300px;
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    #search-input:focus {
+      box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
+    }
+
+    .search-results {
+      max-height: 200px;
+      overflow-y: auto;
+      border-top: 1px solid #e0e0e0;
+      display: none;
+    }
+
+    .search-result-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+
+    .search-result-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-title {
+      font-weight: bold;
+      color: #1a73e8;
+    }
+
+    .result-subtitle {
+      color: #666;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
     .legend-row {
       margin-top: 6px;
     }
@@ -44,10 +100,10 @@
     #hover-tooltip {
       position: absolute;
       pointer-events: none;
-      max-width: 280px;          /* 🔥 controls tooltip width */
-      white-space: normal;       /* allow wrapping */
-      word-wrap: break-word;     /* break long words */
-      overflow-wrap: break-word; /* modern equivalent */
+      max-width: 280px;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
       background: rgba(255, 255, 255, 0.95);
       padding: 6px 8px;
       border-radius: 6px;
@@ -62,19 +118,19 @@
     /* ---------- InfoWindow ---------- */
     .info-window {
       max-height: 250px;
-      max-width: 420px;       /* 🔥 limit overall width */
+      max-width: 420px;
       overflow-y: auto;
       font-size: 13px;
-      word-wrap: break-word;  /* break long words */
+      word-wrap: break-word;
       overflow-wrap: break-word;
-      white-space: normal;    /* allow text to wrap to next line */
+      white-space: normal;
     }
     
     .info-table {
       width: 100%;
       min-width: 300px;
       border-collapse: collapse;
-      table-layout: fixed;    /* 🔥 ensures columns respect widths and wrap */
+      table-layout: fixed;
     }
     
     .info-table thead tr {
@@ -88,16 +144,16 @@
       padding: 6px 8px;
       border-bottom: 1px solid #eee;
       text-align: left;
-      vertical-align: top;      /* ensures multi-line cells align top */
+      vertical-align: top;
     }
     
     .info-table td:first-child {
       font-weight: bold;
-      width: 120px;             /* optional: keep label column narrower */
+      width: 120px;
     }
     
     .info-table td:nth-child(2) {
-      max-width: 280px;         /* optional: prevent value column from stretching too far */
+      max-width: 280px;
       word-wrap: break-word;
       overflow-wrap: break-word;
     }
@@ -130,6 +186,7 @@
     let clickedFeature = null;
     let isClickInfoWindowOpen = false;
     let tooltip;
+    let placesService;
 
     /* =====================
        Init Map
@@ -147,11 +204,140 @@
       });
       tooltip = document.getElementById("hover-tooltip");
       
+      // Initialize Places service
+      placesService = new google.maps.places.PlacesService(map);
+      
       const npcLayer = createNpcLayer(map);
       const estLayer = createEstablishmentLayer(map);
 
+      createSearchBox(map);
       createToggleControls(map, npcLayer, estLayer);
       createLegend(map);
+    }
+
+    /* =====================
+       Search Functionality
+    ====================== */
+    function createSearchBox(map) {
+      const searchContainer = document.createElement("div");
+      searchContainer.className = "search-container";
+      
+      const searchInput = document.createElement("input");
+      searchInput.id = "search-input";
+      searchInput.type = "text";
+      searchInput.placeholder = "Search for places...";
+      
+      const searchResults = document.createElement("div");
+      searchResults.className = "search-results";
+      
+      searchContainer.appendChild(searchInput);
+      searchContainer.appendChild(searchResults);
+      
+      map.controls[google.maps.ControlPosition.TOP_CENTER].push(searchContainer);
+      
+      let searchTimeout;
+      
+      searchInput.addEventListener("input", (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+          searchResults.style.display = "none";
+          return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+          performSearch(query, searchResults);
+        }, 300);
+      });
+      
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const firstResult = searchResults.querySelector(".search-result-item");
+          if (firstResult) {
+            firstResult.click();
+          }
+        }
+      });
+      
+      // Hide results when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!searchContainer.contains(e.target)) {
+          searchResults.style.display = "none";
+        }
+      });
+    }
+
+    function performSearch(query, resultsContainer) {
+      // Search places using Google Places API
+      const request = {
+        query: query,
+        bounds: map.getBounds(),
+        fields: ["name", "geometry", "formatted_address", "place_id"]
+      };
+      
+      placesService.textSearch(request, (places, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          const results = places.slice(0, 8).map(place => ({
+            type: "place",
+            title: place.name,
+            subtitle: place.formatted_address,
+            place: place
+          }));
+          
+          displaySearchResults(results, resultsContainer);
+        } else {
+          displaySearchResults([], resultsContainer);
+        }
+      });
+    }
+
+    function displaySearchResults(results, container) {
+      container.innerHTML = "";
+      
+      if (results.length === 0) {
+        container.innerHTML = '<div class="search-result-item">No results found</div>';
+        container.style.display = "block";
+        return;
+      }
+      
+      results.forEach(result => {
+        const item = document.createElement("div");
+        item.className = "search-result-item";
+        item.innerHTML = `
+          <div class="result-title">${result.title}</div>
+          <div class="result-subtitle">${result.subtitle}</div>
+        `;
+        
+        item.addEventListener("click", () => {
+          handleSearchResultClick(result);
+          container.style.display = "none";
+          document.getElementById("search-input").value = result.title;
+        });
+        
+        container.appendChild(item);
+      });
+      
+      container.style.display = "block";
+    }
+
+    function handleSearchResultClick(result) {
+      const place = result.place;
+      const location = place.geometry.location;
+      
+      map.panTo(location);
+      map.setZoom(16);
+      
+      clickInfoWindow.setContent(`
+        <div class="info-window">
+          <b>${place.name}</b><br/>
+          ${place.formatted_address}
+        </div>
+      `);
+      clickInfoWindow.setPosition(location);
+      clickInfoWindow.open(map);
+      isClickInfoWindowOpen = true;
     }
 
     /* =====================
@@ -418,9 +604,9 @@
     window.initMap = initMap;
   </script>
 
-  <!-- Google Maps API -->
+  <!-- Google Maps API with Places library -->
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&callback=initMap&loading=async"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places&callback=initMap&loading=async"
     async defer
   ></script>
 </body>
