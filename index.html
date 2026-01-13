@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Singapore Police NPC & NPP</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+      overflow: hidden;
     }
 
     #map {
@@ -18,11 +20,9 @@
     .search-container {
       position: absolute;
       top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 10px;
+      right: 10px;
       z-index: 1000;
-      width: 90%;
-      max-width: 400px;
     }
 
     .search-box {
@@ -32,65 +32,90 @@
 
     #search-input {
       width: 100%;
-      padding: 12px 45px 12px 15px;
+      padding: 14px 50px 14px 16px;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       outline: none;
       background: white;
       box-sizing: border-box;
+      -webkit-appearance: none;
     }
 
     #search-input:focus {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
     }
 
     .search-icon {
       position: absolute;
-      right: 12px;
+      right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat center;
       background-size: contain;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     .clear-button {
       position: absolute;
-      right: 40px;
+      right: 44px;
       top: 50%;
       transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23999"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>') no-repeat center;
       background-size: contain;
       cursor: pointer;
       display: none;
+      touch-action: manipulation;
     }
 
     /* ---------- Controls ---------- */
     .control-box {
       background: #ffffff;
-      padding: 10px;
+      padding: 12px;
       margin: 10px;
-      border-radius: 6px;
+      border-radius: 12px;
       font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .control-box label {
+      display: flex;
+      align-items: center;
+      margin: 6px 0;
+      min-height: 44px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .control-box input[type="checkbox"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+      cursor: pointer;
     }
 
     .legend-row {
-      margin-top: 6px;
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      min-height: 32px;
     }
 
     .color-box {
       display: inline-block;
-      width: 14px;
-      height: 14px;
-      margin-right: 6px;
-      vertical-align: middle;
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
+      flex-shrink: 0;
     }
 
     .npp { background: #4CAF50; border-radius: 50%; }
@@ -101,15 +126,15 @@
     #hover-tooltip {
       position: absolute;
       pointer-events: none;
-      max-width: 280px;
+      max-width: 90vw;
       white-space: normal;
       word-wrap: break-word;
       overflow-wrap: break-word;
       background: rgba(255, 255, 255, 0.95);
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-size: 13px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
       display: none;
       z-index: 1000;
       transform: translate(12px, 12px);
@@ -118,10 +143,10 @@
     
     /* ---------- InfoWindow ---------- */
     .info-window {
-      max-height: 250px;
-      max-width: 420px;
+      max-height: 60vh;
+      max-width: 90vw;
       overflow-y: auto;
-      font-size: 13px;
+      font-size: 14px;
       word-wrap: break-word;
       overflow-wrap: break-word;
       white-space: normal;
@@ -129,7 +154,7 @@
     
     .info-table {
       width: 100%;
-      min-width: 300px;
+      min-width: 280px;
       border-collapse: collapse;
       table-layout: fixed;
     }
@@ -142,19 +167,21 @@
     
     .info-table th,
     .info-table td {
-      padding: 6px 8px;
+      padding: 8px;
       border-bottom: 1px solid #eee;
       text-align: left;
       vertical-align: top;
+      word-wrap: break-word;
     }
     
     .info-table td:first-child {
       font-weight: bold;
-      width: 120px;
+      width: 35%;
+      min-width: 100px;
     }
     
     .info-table td:nth-child(2) {
-      max-width: 280px;
+      width: 65%;
       word-wrap: break-word;
       overflow-wrap: break-word;
     }
@@ -163,45 +190,140 @@
       background: #f9f9f9;
     }
 
-    /* ---------- Responsive Design ---------- */
+    /* ---------- Mobile Optimisations ---------- */
     @media (max-width: 768px) {
       .search-container {
-        width: 95%;
-        max-width: none;
         top: 15px;
+        left: 15px;
+        right: 15px;
       }
 
       #search-input {
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 14px 45px 14px 15px;
+        padding: 16px 55px 16px 18px;
+        font-size: 16px;
+        border-radius: 14px;
       }
 
       .control-box {
         margin: 8px;
-        padding: 8px;
-        font-size: 13px;
+        padding: 14px;
+        font-size: 15px;
+      }
+
+      .control-box label {
+        min-height: 48px;
+      }
+
+      .legend-row {
+        min-height: 36px;
+        margin: 10px 0;
+      }
+
+      .color-box {
+        width: 18px;
+        height: 18px;
+        margin-right: 12px;
+      }
+
+      #hover-tooltip {
+        font-size: 15px;
+        padding: 10px 14px;
+        max-width: 85vw;
+      }
+
+      .info-window {
+        max-height: 50vh;
+        font-size: 15px;
+      }
+
+      .info-table td {
+        padding: 10px 8px;
       }
     }
 
     @media (max-width: 480px) {
       .search-container {
-        width: calc(100% - 20px);
         top: 10px;
+        left: 10px;
+        right: 10px;
       }
 
       #search-input {
-        padding: 12px 40px 12px 12px;
+        padding: 18px 60px 18px 20px;
         font-size: 16px;
+        border-radius: 16px;
       }
 
       .search-icon,
       .clear-button {
-        width: 18px;
-        height: 18px;
+        width: 24px;
+        height: 24px;
       }
 
       .clear-button {
-        right: 35px;
+        right: 48px;
+      }
+
+      .control-box {
+        margin: 6px;
+        padding: 16px;
+        font-size: 16px;
+      }
+
+      .control-box label {
+        min-height: 52px;
+      }
+
+      .legend-row {
+        min-height: 40px;
+        margin: 12px 0;
+      }
+
+      .color-box {
+        width: 20px;
+        height: 20px;
+        margin-right: 14px;
+      }
+
+      #hover-tooltip {
+        font-size: 16px;
+        padding: 12px 16px;
+        max-width: 80vw;
+        border-radius: 10px;
+      }
+
+      .info-window {
+        max-height: 45vh;
+        font-size: 16px;
+      }
+
+      .info-table {
+        min-width: 260px;
+      }
+
+      .info-table td {
+        padding: 12px 10px;
+      }
+
+      .info-table td:first-child {
+        width: 40%;
+      }
+
+      .info-table td:nth-child(2) {
+        width: 60%;
+      }
+    }
+
+    /* ---------- Touch Improvements ---------- */
+    @media (hover: none) and (pointer: coarse) {
+      .control-box label:active {
+        background-color: #f0f0f0;
+        border-radius: 8px;
+      }
+
+      .search-icon:active,
+      .clear-button:active {
+        opacity: 0.7;
       }
     }
   </style>
@@ -243,17 +365,32 @@
     let placesService;
     let geocoder;
     let searchMarker;
+    let isMobile = window.innerWidth <= 768;
 
     /* =====================
        Init Map
     ====================== */
     function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
+      // Mobile-optimised map options
+      const mapOptions = {
         center: MAP_CENTER,
-        zoom: 11,
-      });
+        zoom: isMobile ? 10 : 11,
+        gestureHandling: 'greedy',
+        zoomControl: true,
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.RIGHT_BOTTOM
+        },
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: !isMobile
+      };
 
-      clickInfoWindow = new google.maps.InfoWindow();
+      map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+      clickInfoWindow = new google.maps.InfoWindow({
+        maxWidth: isMobile ? Math.min(window.innerWidth - 40, 350) : 420
+      });
+      
       clickInfoWindow.addListener("closeclick", () => {
         isClickInfoWindowOpen = false;
         clickedFeature = null;
@@ -271,6 +408,19 @@
       createToggleControls(map, npcLayer, estLayer);
       createLegend(map);
       initializeSearch();
+
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        const wasMobile = isMobile;
+        isMobile = window.innerWidth <= 768;
+        
+        if (wasMobile !== isMobile) {
+          // Update InfoWindow max width
+          clickInfoWindow.setOptions({
+            maxWidth: isMobile ? Math.min(window.innerWidth - 40, 350) : 420
+          });
+        }
+      });
     }
 
     /* =====================
@@ -298,24 +448,28 @@
       searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           performSearch(this.value);
+          this.blur(); // Hide keyboard on mobile
         }
       });
 
       // Search on button click
       searchButton.addEventListener('click', function() {
         performSearch(searchInput.value);
+        searchInput.blur(); // Hide keyboard on mobile
       });
 
-      // Initialize autocomplete
+      // Initialize autocomplete with mobile-friendly options
       const autocomplete = new google.maps.places.Autocomplete(searchInput, {
         fields: ['place_id', 'geometry', 'name', 'formatted_address'],
-        types: ['establishment', 'geocode']
+        types: ['establishment', 'geocode'],
+        componentRestrictions: { country: 'sg' } // Restrict to Singapore
       });
 
       autocomplete.addListener('place_changed', function() {
         const place = autocomplete.getPlace();
         if (place.geometry) {
           showSearchResult(place);
+          searchInput.blur(); // Hide keyboard on mobile
         }
       });
     }
@@ -367,7 +521,7 @@
         title: place.name || place.formatted_address,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
+          scale: isMobile ? 12 : 10,
           fillColor: '#4285F4',
           fillOpacity: 1,
           strokeColor: '#ffffff',
@@ -379,23 +533,24 @@
       // Show info window for search result
       const infoWindow = new google.maps.InfoWindow({
         content: `
-          <div style="max-width: 250px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px;">${place.name || 'Search Result'}</h3>
-            <p style="margin: 0; font-size: 14px; color: #666;">${place.formatted_address || ''}</p>
+          <div style="max-width: ${isMobile ? '250px' : '300px'};">
+            <h3 style="margin: 0 0 8px 0; font-size: ${isMobile ? '18px' : '16px'};">${place.name || 'Search Result'}</h3>
+            <p style="margin: 0; font-size: ${isMobile ? '16px' : '14px'}; color: #666;">${place.formatted_address || ''}</p>
           </div>
-        `
+        `,
+        maxWidth: isMobile ? Math.min(window.innerWidth - 40, 300) : 350
       });
 
       searchMarker.addListener('click', () => {
         infoWindow.open(map, searchMarker);
       });
 
-      // Center map on result
+      // Center map on result with mobile-appropriate zoom
       if (place.geometry.viewport) {
         map.fitBounds(place.geometry.viewport);
       } else {
         map.setCenter(location);
-        map.setZoom(15);
+        map.setZoom(isMobile ? 16 : 15);
       }
 
       // Show info window immediately
@@ -433,7 +588,7 @@
           fillColor: stringToColor(name),
           fillOpacity: 0.55,
           strokeColor: "#333333",
-          strokeWeight: 1.5
+          strokeWeight: isMobile ? 2 : 1.5
         };
       });
       
@@ -449,21 +604,24 @@
         fitFeatureBounds(e.feature);
       });
 
-      layer.addListener("mouseover", e => {
-        if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
-        map.getDiv().style.cursor = "pointer";
-        showTooltip(buildNpcHoverContent(e.feature), e);
-      });
+      // Only add hover events on non-touch devices
+      if (window.matchMedia('(hover: hover)').matches) {
+        layer.addListener("mouseover", e => {
+          if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+          map.getDiv().style.cursor = "pointer";
+          showTooltip(buildNpcHoverContent(e.feature), e);
+        });
 
-      layer.addListener("mousemove", e => {
-        if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
-        moveTooltip(e);
-      });
+        layer.addListener("mousemove", e => {
+          if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+          moveTooltip(e);
+        });
 
-      layer.addListener("mouseout", () => {
-        map.getDiv().style.cursor = "";
-        hideTooltip();
-      });
+        layer.addListener("mouseout", () => {
+          map.getDiv().style.cursor = "";
+          hideTooltip();
+        });
+      }
 
       return layer;
     }
@@ -488,16 +646,19 @@
         fitFeatureBounds(e.feature);
       });
       
-      layer.addListener("mouseover", e => {
-        if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
-        map.getDiv().style.cursor = "pointer";
-        showTooltip(buildEstHoverContent(e.feature), e);
-      });
-      
-      layer.addListener("mouseout", () => {
-        map.getDiv().style.cursor = "";
-        hideTooltip();
-      });
+      // Only add hover events on non-touch devices
+      if (window.matchMedia('(hover: hover)').matches) {
+        layer.addListener("mouseover", e => {
+          if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+          map.getDiv().style.cursor = "pointer";
+          showTooltip(buildEstHoverContent(e.feature), e);
+        });
+        
+        layer.addListener("mouseout", () => {
+          map.getDiv().style.cursor = "";
+          hideTooltip();
+        });
+      }
 
       return layer;
     }
@@ -547,11 +708,11 @@
 
       return {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
+        scale: isMobile ? 10 : 8,
         fillColor: color,
         fillOpacity: 1,
         strokeColor: "#ffffff",
-        strokeWeight: 1
+        strokeWeight: isMobile ? 2 : 1
       };
     }
 
@@ -622,12 +783,14 @@
     }
 
     function showTooltip(html, e) {
+      if (isMobile) return; // Don't show tooltips on mobile
       tooltip.innerHTML = html;
       tooltip.style.display = "block";
       moveTooltip(e);
     }
     
     function moveTooltip(e) {
+      if (isMobile) return;
       tooltip.style.left = e.domEvent.clientX + "px";
       tooltip.style.top = e.domEvent.clientY + "px";
     }
@@ -662,8 +825,13 @@
     
       if (count === 1) {
         map.panTo(bounds.getCenter());
+        map.setZoom(isMobile ? 16 : 15);
       } else {
         map.fitBounds(bounds);
+        // Add padding for mobile
+        if (isMobile) {
+          map.fitBounds(bounds, { top: 80, bottom: 80, left: 20, right: 20 });
+        }
       }
     }
     
