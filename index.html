@@ -376,7 +376,6 @@
     let clickedFeature = null;
     let isClickInfoWindowOpen = false;
     let tooltip;
-    let placesService;
     let geocoder;
     let searchMarker;
 
@@ -398,7 +397,6 @@
       tooltip = document.getElementById("hover-tooltip");
       
       // Initialize Places service and Geocoder
-      placesService = new google.maps.places.PlacesService(map);
       geocoder = new google.maps.Geocoder();
       
       const npcLayer = createNpcLayer(map);
@@ -441,13 +439,12 @@
       searchButton.addEventListener('click', function() {
         performSearch(searchInput.value);
       });
-
+      
       // Initialize autocomplete
       const autocomplete = new google.maps.places.Autocomplete(searchInput, {
-        fields: ['place_id', 'geometry', 'name', 'formatted_address'],
-        types: ['establishment', 'geocode']
+        fields: ['geometry', 'name', 'formatted_address']
       });
-
+      
       autocomplete.addListener('place_changed', function() {
         const place = autocomplete.getPlace();
         if (place.geometry) {
@@ -455,40 +452,55 @@
         }
       });
     }
-
-    function performSearch(query) {
+    
+    async function performSearch(query) {
       if (!query.trim()) return;
-
-      // Clear previous search marker
+    
       clearSearchMarker();
-
-      // First try Places API search
-      const request = {
-        query: query,
-        fields: ['place_id', 'geometry', 'name', 'formatted_address', 'types']
-      };
-
-      placesService.textSearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && results[0]) {
-          showSearchResult(results[0]);
-        } else {
-          // Fallback to Geocoding API
-          geocoder.geocode({ address: query }, (results, status) => {
-            if (status === google.maps.GeocoderStatus.OK && results[0]) {
-              const place = {
-                geometry: results[0].geometry,
-                name: results[0].formatted_address,
-                formatted_address: results[0].formatted_address
-              };
-              showSearchResult(place);
-            } else {
-              alert('Location not found. Please try a different search term.');
-            }
-          });
+    
+      try {
+        const { places } = await google.maps.places.Place.searchByText({
+          textQuery: query,
+          fields: [
+            'displayName',
+            'formattedAddress',
+            'location',
+            'viewport'
+          ],
+          locationBias: map.getBounds()
+            ? { bounds: map.getBounds() }
+            : undefined
+        });
+    
+        if (!places || !places.length) {
+          throw new Error('No places found');
         }
-      });
+    
+        showSearchResult({
+          name: places[0].displayName,
+          formatted_address: places[0].formattedAddress,
+          geometry: {
+            location: places[0].location,
+            viewport: places[0].viewport
+          }
+        });
+    
+      } catch (err) {
+        // Fallback to Geocoder
+        geocoder.geocode({ address: query }, (results, status) => {
+          if (status === 'OK' && results[0]) {
+            showSearchResult({
+              name: results[0].formatted_address,
+              formatted_address: results[0].formatted_address,
+              geometry: results[0].geometry
+            });
+          } else {
+            alert('Location not found.');
+          }
+        });
+      }
     }
-
+    
     function showSearchResult(place) {
       const location = place.geometry.location;
       
