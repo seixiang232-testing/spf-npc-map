@@ -14,65 +14,6 @@
       width: 100%;
     }
 
-    /* ---------- Search Box ---------- */
-    .search-container {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      width: 300px;
-      max-width: calc(100vw - 20px);
-    }
-
-    #search-input {
-      width: 100%;
-      padding: 12px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      outline: none;
-      box-sizing: border-box;
-    }
-
-    #search-input:focus {
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    }
-
-    .search-results {
-      background: white;
-      border-radius: 0 0 8px 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      max-height: 300px;
-      overflow-y: auto;
-      display: none;
-    }
-
-    .search-result-item {
-      padding: 12px 16px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-
-    .search-result-item:hover {
-      background-color: #f5f5f5;
-    }
-
-    .search-result-item:last-child {
-      border-bottom: none;
-    }
-
-    .search-result-main {
-      font-weight: bold;
-      margin-bottom: 2px;
-    }
-
-    .search-result-secondary {
-      color: #666;
-      font-size: 12px;
-    }
-
     /* ---------- Controls ---------- */
     .control-box {
       background: #ffffff;
@@ -81,11 +22,6 @@
       border-radius: 6px;
       font-size: 14px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Adjust the filter controls to avoid overlapping with search */
-    .filter-controls {
-      margin-top: 80px; /* Push down to avoid search box */
     }
 
     .legend-row {
@@ -108,10 +44,10 @@
     #hover-tooltip {
       position: absolute;
       pointer-events: none;
-      max-width: 280px;
-      white-space: normal;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
+      max-width: 280px;          /* 🔥 controls tooltip width */
+      white-space: normal;       /* allow wrapping */
+      word-wrap: break-word;     /* break long words */
+      overflow-wrap: break-word; /* modern equivalent */
       background: rgba(255, 255, 255, 0.95);
       padding: 6px 8px;
       border-radius: 6px;
@@ -126,19 +62,19 @@
     /* ---------- InfoWindow ---------- */
     .info-window {
       max-height: 250px;
-      max-width: 420px;
+      max-width: 420px;       /* 🔥 limit overall width */
       overflow-y: auto;
       font-size: 13px;
-      word-wrap: break-word;
+      word-wrap: break-word;  /* break long words */
       overflow-wrap: break-word;
-      white-space: normal;
+      white-space: normal;    /* allow text to wrap to next line */
     }
     
     .info-table {
       width: 100%;
       min-width: 300px;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: fixed;    /* 🔥 ensures columns respect widths and wrap */
     }
     
     .info-table thead tr {
@@ -152,16 +88,16 @@
       padding: 6px 8px;
       border-bottom: 1px solid #eee;
       text-align: left;
-      vertical-align: top;
+      vertical-align: top;      /* ensures multi-line cells align top */
     }
     
     .info-table td:first-child {
       font-weight: bold;
-      width: 120px;
+      width: 120px;             /* optional: keep label column narrower */
     }
     
     .info-table td:nth-child(2) {
-      max-width: 280px;
+      max-width: 280px;         /* optional: prevent value column from stretching too far */
       word-wrap: break-word;
       overflow-wrap: break-word;
     }
@@ -169,32 +105,12 @@
     .info-table tbody tr:nth-child(even) {
       background: #f9f9f9;
     }
-
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-      .search-container {
-        width: calc(100vw - 20px);
-        left: 10px;
-        right: 10px;
-      }
-      
-      .filter-controls {
-        margin-top: 70px;
-      }
-    }
   </style>
 </head>
 
 <body>
-  <!-- Search Container -->
-  <div class="search-container">
-    <input type="text" id="search-input" placeholder="Search for places worldwide..." />
-    <div id="search-results" class="search-results"></div>
-  </div>
-
   <div id="map"></div>
   <div id="hover-tooltip"></div>
-  
   <script>
     /* =====================
        Constants
@@ -214,8 +130,6 @@
     let clickedFeature = null;
     let isClickInfoWindowOpen = false;
     let tooltip;
-    let placesService;
-    let searchMarker;
 
     /* =====================
        Init Map
@@ -231,156 +145,17 @@
         isClickInfoWindowOpen = false;
         clickedFeature = null;
       });
-      
       tooltip = document.getElementById("hover-tooltip");
-      placesService = new google.maps.places.PlacesService(map);
       
       const npcLayer = createNpcLayer(map);
       const estLayer = createEstablishmentLayer(map);
 
       createToggleControls(map, npcLayer, estLayer);
       createLegend(map);
-      initializeSearch();
     }
 
     /* =====================
-       Search Functionality
-    ====================== */
-    function initializeSearch() {
-      const searchInput = document.getElementById('search-input');
-      const searchResults = document.getElementById('search-results');
-      let searchTimeout;
-
-      // Handle input changes
-      searchInput.addEventListener('input', function() {
-        const query = this.value.trim();
-        
-        clearTimeout(searchTimeout);
-        
-        if (query.length < 2) {
-          hideSearchResults();
-          return;
-        }
-
-        // Debounce search requests
-        searchTimeout = setTimeout(() => {
-          performSearch(query);
-        }, 300);
-      });
-
-      // Handle clicking outside to close results
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('.search-container')) {
-          hideSearchResults();
-        }
-      });
-
-      // Handle Enter key
-      searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const firstResult = searchResults.querySelector('.search-result-item');
-          if (firstResult) {
-            firstResult.click();
-          }
-        }
-      });
-    }
-
-    function performSearch(query) {
-      const request = {
-        query: query,
-        fields: ['name', 'geometry', 'formatted_address', 'place_id', 'types']
-      };
-
-      placesService.textSearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-          displaySearchResults(results.slice(0, 8)); // Limit to 8 results
-        } else {
-          hideSearchResults();
-        }
-      });
-    }
-
-    function displaySearchResults(results) {
-      const searchResults = document.getElementById('search-results');
-      
-      searchResults.innerHTML = results.map(place => {
-        const types = place.types ? place.types.join(', ') : '';
-        return `
-          <div class="search-result-item" data-place-id="${place.place_id}">
-            <div class="search-result-main">${place.name}</div>
-            <div class="search-result-secondary">${place.formatted_address}</div>
-            ${types ? `<div class="search-result-secondary" style="font-style: italic;">${types}</div>` : ''}
-          </div>
-        `;
-      }).join('');
-
-      // Add click handlers
-      searchResults.querySelectorAll('.search-result-item').forEach((item, index) => {
-        item.addEventListener('click', () => {
-          selectSearchResult(results[index]);
-        });
-      });
-
-      searchResults.style.display = 'block';
-    }
-
-    function selectSearchResult(place) {
-      hideSearchResults();
-      
-      // Clear search input
-      document.getElementById('search-input').value = place.name;
-      
-      // Remove previous search marker
-      if (searchMarker) {
-        searchMarker.setMap(null);
-      }
-
-      // Create new marker for the selected place
-      searchMarker = new google.maps.Marker({
-        position: place.geometry.location,
-        map: map,
-        title: place.name,
-        icon: {
-          url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-          scaledSize: new google.maps.Size(32, 32)
-        }
-      });
-
-      // Center map on the location
-      map.setCenter(place.geometry.location);
-      
-      // Set appropriate zoom level based on place types
-      let zoomLevel = 15;
-      if (place.types) {
-        if (place.types.includes('country')) zoomLevel = 6;
-        else if (place.types.includes('administrative_area_level_1')) zoomLevel = 8;
-        else if (place.types.includes('locality')) zoomLevel = 12;
-        else if (place.types.includes('neighborhood')) zoomLevel = 14;
-      }
-      map.setZoom(zoomLevel);
-
-      // Show info window for the search result
-      const infoContent = `
-        <div class="info-window">
-          <h3>${place.name}</h3>
-          <p>${place.formatted_address}</p>
-          ${place.types ? `<p><em>Type: ${place.types.join(', ')}</em></p>` : ''}
-        </div>
-      `;
-      
-      clickInfoWindow.setContent(infoContent);
-      clickInfoWindow.open(map, searchMarker);
-      isClickInfoWindowOpen = true;
-    }
-
-    function hideSearchResults() {
-      document.getElementById('search-results').style.display = 'none';
-    }
-
-    /* =====================
-       Layers (unchanged)
+       Layers
     ====================== */
     function createNpcLayer(map) {
       const layer = new google.maps.Data({ map });
@@ -389,6 +164,7 @@
         features.forEach(feature => {
           const npcName = feature.getProperty("NPC_NAME");
           
+          // Remove features that do NOT have NPC_NAME
           if (!npcName || npcName.trim() === "") {
             layer.remove(feature);
           }
@@ -414,6 +190,7 @@
         clickInfoWindow.open(map);
         isClickInfoWindowOpen = true;
 
+        // Fit map to the clicked NPC boundary
         fitFeatureBounds(e.feature);
       });
 
@@ -475,7 +252,7 @@
     ====================== */
     function createToggleControls(map, npcLayer, estLayer) {
       const div = document.createElement("div");
-      div.className = "control-box filter-controls";
+      div.className = "control-box";
       div.innerHTML = `
         <b>Filter</b><br />
         <label><input type="checkbox" checked /> NPC Boundaries</label><br />
@@ -504,7 +281,7 @@
     }
 
     /* =====================
-       Helpers (unchanged)
+       Helpers
     ====================== */
     function buildEstablishmentIcon(feature) {
       const dept = feature.getProperty("DEPARTMENT") || "";
@@ -610,7 +387,7 @@
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
       }
       
-      const STEP = 25;
+      const STEP = 25; // larger = more separation
       const hue = (Math.abs(hash) % (360 / STEP)) * STEP;
       
       return `hsl(${hue}, 70%, 55%)`;
@@ -629,8 +406,11 @@
       });
     
       if (count === 1) {
-        map.panTo(bounds.getCenter());
+        // Single point → center and set a default zoom
+        map.panTo(bounds.getCenter()); // smoothly moves the map center
+        // map.setZoom(10); // adjust zoom as needed
       } else {
+        // Polygon or multiple points → fit bounds
         map.fitBounds(bounds);
       }
     }
@@ -638,9 +418,9 @@
     window.initMap = initMap;
   </script>
 
-  <!-- Google Maps API with Places library -->
+  <!-- Google Maps API -->
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places&callback=initMap&loading=async"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&callback=initMap&loading=async"
     async defer
   ></script>
 </body>
