@@ -14,51 +14,46 @@
       width: 100%;
     }
 
-    /* ---------- Controls ---------- */
-    .control-box {
-      background: #ffffff;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 6px;
-      font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
-
     /* ---------- Search Box ---------- */
     .search-container {
-      background: #ffffff;
-      margin: 10px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      width: 300px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: 400px;
+      max-width: 90vw;
     }
 
     #search-input {
       width: 100%;
       padding: 12px 16px;
+      font-size: 16px;
       border: none;
-      border-radius: 6px;
-      font-size: 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
       outline: none;
       box-sizing: border-box;
     }
 
     #search-input:focus {
-      box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     }
 
     .search-results {
-      max-height: 200px;
+      background: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      max-height: 300px;
       overflow-y: auto;
-      border-top: 1px solid #e0e0e0;
       display: none;
     }
 
     .search-result-item {
-      padding: 10px 16px;
+      padding: 12px 16px;
       cursor: pointer;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 13px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
     }
 
     .search-result-item:hover {
@@ -69,15 +64,24 @@
       border-bottom: none;
     }
 
-    .result-title {
+    .search-result-main {
       font-weight: bold;
-      color: #1a73e8;
+      margin-bottom: 2px;
     }
 
-    .result-subtitle {
+    .search-result-secondary {
       color: #666;
       font-size: 12px;
-      margin-top: 2px;
+    }
+
+    /* ---------- Controls ---------- */
+    .control-box {
+      background: #ffffff;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     .legend-row {
@@ -165,8 +169,15 @@
 </head>
 
 <body>
+  <!-- Search Container -->
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="Search for places worldwide..." />
+    <div id="search-results" class="search-results"></div>
+  </div>
+
   <div id="map"></div>
   <div id="hover-tooltip"></div>
+  
   <script>
     /* =====================
        Constants
@@ -187,6 +198,7 @@
     let isClickInfoWindowOpen = false;
     let tooltip;
     let placesService;
+    let searchMarker;
 
     /* =====================
        Init Map
@@ -202,198 +214,156 @@
         isClickInfoWindowOpen = false;
         clickedFeature = null;
       });
-      tooltip = document.getElementById("hover-tooltip");
       
-      // Initialize Places service
+      tooltip = document.getElementById("hover-tooltip");
       placesService = new google.maps.places.PlacesService(map);
-      // Initialize Autocomplete service for better search
-      autocompleteService = new google.maps.places.AutocompleteService();
       
       const npcLayer = createNpcLayer(map);
       const estLayer = createEstablishmentLayer(map);
 
-      createSearchBox(map);
       createToggleControls(map, npcLayer, estLayer);
       createLegend(map);
+      initializeSearch();
     }
 
     /* =====================
        Search Functionality
     ====================== */
-    function createSearchBox(map) {
-      const searchContainer = document.createElement("div");
-      searchContainer.className = "search-container";
-      
-      const searchInput = document.createElement("input");
-      searchInput.id = "search-input";
-      searchInput.type = "text";
-      searchInput.placeholder = "Search for places...";
-      
-      const searchResults = document.createElement("div");
-      searchResults.className = "search-results";
-      
-      searchContainer.appendChild(searchInput);
-      searchContainer.appendChild(searchResults);
-      
-      map.controls[google.maps.ControlPosition.TOP_CENTER].push(searchContainer);
-      
+    function initializeSearch() {
+      const searchInput = document.getElementById('search-input');
+      const searchResults = document.getElementById('search-results');
       let searchTimeout;
-      
-      searchInput.addEventListener("input", (e) => {
+
+      // Handle input changes
+      searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
         clearTimeout(searchTimeout);
-        const query = e.target.value.trim();
         
         if (query.length < 2) {
-          searchResults.style.display = "none";
+          hideSearchResults();
           return;
         }
-        
+
+        // Debounce search requests
         searchTimeout = setTimeout(() => {
-          performSearch(query, searchResults);
+          performSearch(query);
         }, 300);
       });
-      
-      searchInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
+
+      // Handle clicking outside to close results
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+          hideSearchResults();
+        }
+      });
+
+      // Handle Enter key
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
           e.preventDefault();
-          const firstResult = searchResults.querySelector(".search-result-item");
+          const firstResult = searchResults.querySelector('.search-result-item');
           if (firstResult) {
             firstResult.click();
           }
         }
       });
-      
-      // Hide results when clicking outside
-      document.addEventListener("click", (e) => {
-        if (!searchContainer.contains(e.target)) {
-          searchResults.style.display = "none";
-        }
-      });
     }
 
-    function performSearch(query, resultsContainer) {
-      // First try autocomplete for better suggestions
-      const autocompleteService = new google.maps.places.AutocompleteService();
-      
-      const request = {
-        input: query,
-        componentRestrictions: { country: 'sg' }, // Restrict to Singapore
-        types: ['establishment', 'geocode'] // Include both places and addresses
-      };
-      
-      autocompleteService.getPlacePredictions(request, (predictions, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-          const results = predictions.slice(0, 8).map(prediction => ({
-            type: "prediction",
-            title: prediction.structured_formatting.main_text,
-            subtitle: prediction.structured_formatting.secondary_text || prediction.description,
-            placeId: prediction.place_id
-          }));
-          
-          displaySearchResults(results, resultsContainer);
-        } else {
-          // Fallback to text search if autocomplete fails
-          fallbackTextSearch(query, resultsContainer);
-        }
-      });
-    }
-    
-    function fallbackTextSearch(query, resultsContainer) {
+    function performSearch(query) {
       const request = {
         query: query,
-        // Remove bounds restriction for wider search
-        fields: ["name", "geometry", "formatted_address", "place_id"]
+        fields: ['name', 'geometry', 'formatted_address', 'place_id', 'types']
       };
-      
-      placesService.textSearch(request, (places, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && places) {
-          const results = places.slice(0, 8).map(place => ({
-            type: "place",
-            title: place.name,
-            subtitle: place.formatted_address,
-            place: place
-          }));
-          
-          displaySearchResults(results, resultsContainer);
+
+      placesService.textSearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+          displaySearchResults(results.slice(0, 8)); // Limit to 8 results
         } else {
-          displaySearchResults([], resultsContainer);
+          hideSearchResults();
         }
       });
     }
 
-    function displaySearchResults(results, container) {
-      container.innerHTML = "";
+    function displaySearchResults(results) {
+      const searchResults = document.getElementById('search-results');
       
-      if (results.length === 0) {
-        container.innerHTML = '<div class="search-result-item" style="color: #666;">No results found. Try a different search term.</div>';
-        container.style.display = "block";
-        return;
-      }
-      
-      results.forEach(result => {
-        const item = document.createElement("div");
-        item.className = "search-result-item";
-        item.innerHTML = `
-          <div class="result-title">${escapeHtml(result.title)}</div>
-          <div class="result-subtitle">${escapeHtml(result.subtitle)}</div>
+      searchResults.innerHTML = results.map(place => {
+        const types = place.types ? place.types.join(', ') : '';
+        return `
+          <div class="search-result-item" data-place-id="${place.place_id}">
+            <div class="search-result-main">${place.name}</div>
+            <div class="search-result-secondary">${place.formatted_address}</div>
+            ${types ? `<div class="search-result-secondary" style="font-style: italic;">${types}</div>` : ''}
+          </div>
         `;
-        
-        item.addEventListener("click", () => {
-          handleSearchResultClick(result);
-          container.style.display = "none";
-          document.getElementById("search-input").value = result.title;
+      }).join('');
+
+      // Add click handlers
+      searchResults.querySelectorAll('.search-result-item').forEach((item, index) => {
+        item.addEventListener('click', () => {
+          selectSearchResult(results[index]);
         });
-        
-        container.appendChild(item);
       });
+
+      searchResults.style.display = 'block';
+    }
+
+    function selectSearchResult(place) {
+      hideSearchResults();
       
-      container.style.display = "block";
-    }
-    
-    // Helper function to escape HTML
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-    
-    function handleSearchResultClick(result) {
-      if (result.type === "prediction") {
-        // Get place details from place ID
-        const request = {
-          placeId: result.placeId,
-          fields: ["name", "geometry", "formatted_address"]
-        };
-        
-        placesService.getDetails(request, (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK) {
-            navigateToPlace(place);
-          }
-        });
-      } else {
-        navigateToPlace(result.place);
+      // Clear search input
+      document.getElementById('search-input').value = place.name;
+      
+      // Remove previous search marker
+      if (searchMarker) {
+        searchMarker.setMap(null);
       }
-    }
-    
-    function navigateToPlace(place) {
-      const location = place.geometry.location;
+
+      // Create new marker for the selected place
+      searchMarker = new google.maps.Marker({
+        position: place.geometry.location,
+        map: map,
+        title: place.name,
+        icon: {
+          url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+          scaledSize: new google.maps.Size(32, 32)
+        }
+      });
+
+      // Center map on the location
+      map.setCenter(place.geometry.location);
       
-      map.panTo(location);
-      map.setZoom(16);
-      
-      clickInfoWindow.setContent(`
+      // Set appropriate zoom level based on place types
+      let zoomLevel = 15;
+      if (place.types) {
+        if (place.types.includes('country')) zoomLevel = 6;
+        else if (place.types.includes('administrative_area_level_1')) zoomLevel = 8;
+        else if (place.types.includes('locality')) zoomLevel = 12;
+        else if (place.types.includes('neighborhood')) zoomLevel = 14;
+      }
+      map.setZoom(zoomLevel);
+
+      // Show info window for the search result
+      const infoContent = `
         <div class="info-window">
-          <b>${place.name}</b><br/>
-          ${place.formatted_address}
+          <h3>${place.name}</h3>
+          <p>${place.formatted_address}</p>
+          ${place.types ? `<p><em>Type: ${place.types.join(', ')}</em></p>` : ''}
         </div>
-      `);
-      clickInfoWindow.setPosition(location);
-      clickInfoWindow.open(map);
+      `;
+      
+      clickInfoWindow.setContent(infoContent);
+      clickInfoWindow.open(map, searchMarker);
       isClickInfoWindowOpen = true;
     }
 
+    function hideSearchResults() {
+      document.getElementById('search-results').style.display = 'none';
+    }
+
     /* =====================
-       Layers
+       Layers (unchanged)
     ====================== */
     function createNpcLayer(map) {
       const layer = new google.maps.Data({ map });
@@ -402,7 +372,6 @@
         features.forEach(feature => {
           const npcName = feature.getProperty("NPC_NAME");
           
-          // Remove features that do NOT have NPC_NAME
           if (!npcName || npcName.trim() === "") {
             layer.remove(feature);
           }
@@ -428,7 +397,6 @@
         clickInfoWindow.open(map);
         isClickInfoWindowOpen = true;
 
-        // Fit map to the clicked NPC boundary
         fitFeatureBounds(e.feature);
       });
 
@@ -486,7 +454,7 @@
     }
 
     /* =====================
-       UI Components
+       UI Components (unchanged)
     ====================== */
     function createToggleControls(map, npcLayer, estLayer) {
       const div = document.createElement("div");
@@ -519,7 +487,7 @@
     }
 
     /* =====================
-       Helpers
+       Helpers (unchanged)
     ====================== */
     function buildEstablishmentIcon(feature) {
       const dept = feature.getProperty("DEPARTMENT") || "";
@@ -625,7 +593,7 @@
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
       }
       
-      const STEP = 25; // larger = more separation
+      const STEP = 25;
       const hue = (Math.abs(hash) % (360 / STEP)) * STEP;
       
       return `hsl(${hue}, 70%, 55%)`;
@@ -644,11 +612,8 @@
       });
     
       if (count === 1) {
-        // Single point → center and set a default zoom
-        map.panTo(bounds.getCenter()); // smoothly moves the map center
-        // map.setZoom(10); // adjust zoom as needed
+        map.panTo(bounds.getCenter());
       } else {
-        // Polygon or multiple points → fit bounds
         map.fitBounds(bounds);
       }
     }
