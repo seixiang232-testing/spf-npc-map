@@ -166,8 +166,8 @@
     /* ---------- Mobile Responsive Design ---------- */
     @media (max-width: 768px) {
       .search-container {
-        width: calc(100% - 20px);
-        max-width: none;
+        width: calc(100% - 140px); /* Reserve space for filter box */
+        max-width: 300px;
         top: 15px;
         left: 10px;
         transform: none;
@@ -182,7 +182,7 @@
         margin: 6px;
         padding: 8px;
         font-size: 13px;
-        max-width: calc(100vw - 20px);
+        max-width: 120px; /* Fixed width for filter box */
         box-sizing: border-box;
       }
     
@@ -217,10 +217,26 @@
       }
     }
     
+    @media (max-width: 600px) {
+      .search-container {
+        width: calc(100% - 16px);
+        max-width: none;
+        top: 70px; /* Move search bar below filter box */
+        left: 8px;
+      }
+    
+      .control-box {
+        margin: 4px;
+        padding: 6px;
+        font-size: 12px;
+        max-width: none; /* Allow full width when stacked */
+      }
+    }
+    
     @media (max-width: 480px) {
       .search-container {
         width: calc(100% - 16px);
-        top: 8px;
+        top: 75px; /* Adjust for smaller filter box */
         left: 8px;
       }
     
@@ -286,7 +302,7 @@
     @media (max-width: 360px) {
       .search-container {
         width: calc(100% - 12px);
-        top: 6px;
+        top: 70px;
         left: 6px;
       }
     
