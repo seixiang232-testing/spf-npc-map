@@ -162,55 +162,182 @@
     .info-table tbody tr:nth-child(even) {
       background: #f9f9f9;
     }
-  
-    /* =====================
-       Responsive
-    ====================== */
+
+    /* ---------- Mobile Responsive Design ---------- */
     @media (max-width: 768px) {
       .search-container {
-        width: calc(100% - 140px);
+        width: calc(100% - 140px); /* Reserve space for filter box */
         max-width: 300px;
         top: 15px;
         left: 10px;
         transform: none;
       }
-  
-      gmp-place-autocomplete::part(input) {
-        font-size: 16px;
+    
+      #search-input {
+        font-size: 16px; /* Prevents zoom on iOS */
         padding: 14px 45px 14px 15px;
       }
-  
+    
       .control-box {
+        margin: 6px;
+        padding: 8px;
         font-size: 13px;
-        max-width: 120px;
+        max-width: 120px; /* Fixed width for filter box */
+        box-sizing: border-box;
+      }
+    
+      #hover-tooltip {
+        max-width: calc(100vw - 40px);
+        font-size: 12px;
+        padding: 8px;
+      }
+    
+      .info-window {
+        max-width: calc(100vw - 40px);
+        max-height: 200px;
+        font-size: 12px;
+      }
+    
+      .info-table {
+        min-width: 250px;
+        font-size: 12px;
+      }
+    
+      .info-table td:first-child {
+        width: 100px;
+      }
+    
+      .info-table td:nth-child(2) {
+        max-width: 150px;
+      }
+    
+      .info-table th,
+      .info-table td {
+        padding: 4px 6px;
       }
     }
-  
+    
+    @media (max-width: 600px) {
+      .search-container {
+        width: calc(100% - 16px);
+        max-width: none;
+        top: 70px; /* Move search bar below filter box */
+        left: 8px;
+      }
+    
+      .control-box {
+        margin: 4px;
+        padding: 6px;
+        font-size: 12px;
+        max-width: none; /* Allow full width when stacked */
+      }
+    }
+    
     @media (max-width: 480px) {
+      .search-container {
+        width: calc(100% - 16px);
+        top: 75px; /* Adjust for smaller filter box */
+        left: 8px;
+      }
+    
+      #search-input {
+        padding: 12px 40px 12px 12px;
+        font-size: 16px;
+      }
+    
+      .search-icon,
+      .clear-button {
+        width: 18px;
+        height: 18px;
+      }
+    
+      .clear-button {
+        right: 35px;
+      }
+    
+      .control-box {
+        margin: 4px;
+        padding: 6px;
+        font-size: 12px;
+      }
+    
+      .color-box {
+        width: 12px;
+        height: 12px;
+        margin-right: 4px;
+      }
+    
+      #hover-tooltip {
+        max-width: calc(100vw - 20px);
+        font-size: 11px;
+        padding: 6px;
+        transform: translate(8px, 8px);
+      }
+    
+      .info-window {
+        max-width: calc(100vw - 20px);
+        max-height: 180px;
+        font-size: 11px;
+      }
+    
+      .info-table {
+        min-width: 200px;
+        font-size: 11px;
+      }
+    
+      .info-table td:first-child {
+        width: 80px;
+      }
+    
+      .info-table td:nth-child(2) {
+        max-width: 120px;
+      }
+    
+      .info-table th,
+      .info-table td {
+        padding: 3px 4px;
+      }
+    }
+    
+    @media (max-width: 360px) {
       .search-container {
         width: calc(100% - 12px);
         top: 70px;
         left: 6px;
       }
-  
-      gmp-place-autocomplete::part(input) {
+    
+      #search-input {
         padding: 10px 35px 10px 10px;
         font-size: 16px;
       }
-  
+    
       .search-icon,
       .clear-button {
         width: 16px;
         height: 16px;
       }
-  
+    
       .clear-button {
         right: 30px;
       }
-  
+    
       .control-box {
-        font-size: 11px;
+        margin: 3px;
         padding: 5px;
+        font-size: 11px;
+      }
+    
+      .info-table {
+        min-width: 180px;
+        font-size: 10px;
+      }
+    
+      .info-table td:first-child {
+        width: 70px;
+      }
+    
+      .info-table td:nth-child(2) {
+        max-width: 100px;
       }
     }
   </style>
