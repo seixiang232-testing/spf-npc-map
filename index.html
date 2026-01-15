@@ -164,12 +164,19 @@
     }
 
     /* ---------- Mobile Responsive Design ---------- */
-    @media (max-width: 1024px) {
+    @media (max-width: 1100px) {
       .search-container {
         width: calc(100% - 160px); /* Leave space for filter box */
         max-width: none;
-        top: 10px; /* Keep at same level as filter */
+        top: 90px;
         left: 150px; /* Position to the right of filter box */
+        transform: none;
+      }
+       .search-container {
+        width: calc(100% - 20px);
+        max-width: none;
+        top: 85px; /* Move below filter box */
+        left: 10px;
         transform: none;
       }
     
@@ -217,16 +224,7 @@
       }
     }
     
-    @media (max-width: 768px) {
-      /* Stack vertically on smaller screens */
-      .search-container {
-        width: calc(100% - 20px);
-        max-width: none;
-        top: 85px; /* Move below filter box */
-        left: 10px;
-        transform: none;
-      }
-    
+    @media (max-width: 768px) {    
       .control-box {
         margin: 6px;
         padding: 8px;
@@ -788,7 +786,7 @@
       const STEP = 25;
       const hue = (Math.abs(hash) % (360 / STEP)) * STEP;
       
-      return `hsl(${hue}, 55%, 45%)`;
+      return `hsl(${hue}, 70%, 45%)`;
     }
     
     function fitFeatureBounds(feature) {
