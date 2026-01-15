@@ -358,30 +358,22 @@
       // First try Places API search
       const request = {
         query: query,
-        fields: ['place_id', 'geometry', 'name', 'formatted_address', 'types']
+        fields: ['name', 'geometry', 'formatted_address']
       };
 
-      placesService.textSearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && results[0]) {
+      placesService.findPlaceFromQuery(request, (results, status) => {
+        if (
+          status === google.maps.places.PlacesServiceStatus.OK &&
+          results &&
+          results.length
+        ) {
           showSearchResult(results[0]);
         } else {
-          // Fallback to Geocoding API
-          geocoder.geocode({ address: query }, (results, status) => {
-            if (status === google.maps.GeocoderStatus.OK && results[0]) {
-              const place = {
-                geometry: results[0].geometry,
-                name: results[0].formatted_address,
-                formatted_address: results[0].formatted_address
-              };
-              showSearchResult(place);
-            } else {
-              alert('Location not found. Please try a different search term.');
-            }
-          });
+          alert('Location not found. Try selecting from autocomplete.');
         }
       });
     }
-
+    
     function showSearchResult(place) {
       const location = place.geometry.location;
       
@@ -674,7 +666,7 @@
       const STEP = 25;
       const hue = (Math.abs(hash) % (360 / STEP)) * STEP;
       
-      return `hsl(${hue}, 70%, 45%)`;
+      return `hsl(${hue}, 60%, 60%)`;
     }
     
     function fitFeatureBounds(feature) {
