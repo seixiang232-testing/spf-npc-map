@@ -162,13 +162,13 @@
     .info-table tbody tr:nth-child(even) {
       background: #f9f9f9;
     }
-    
+
     /* ---------- Mobile Responsive Design ---------- */
     @media (max-width: 768px) {
       .search-container {
-        width: calc(100% - 140px); /* Reserve space for filter box */
-        max-width: 300px;
-        top: 70px;
+        width: calc(100% - 20px);
+        max-width: none;
+        top: 80px; /* Move below filter box */
         left: 10px;
         transform: none;
       }
@@ -182,7 +182,7 @@
         margin: 6px;
         padding: 8px;
         font-size: 13px;
-        max-width: 120px; /* Fixed width for filter box */
+        max-width: 140px; /* Constrain filter box width */
         box-sizing: border-box;
       }
     
@@ -219,25 +219,25 @@
     
     @media (max-width: 600px) {
       .search-container {
-        width: calc(100% - 16px);
+        width: calc(100% - 20px);
         max-width: none;
-        top: 70px; /* Move search bar below filter box */
-        left: 8px;
+        top: 90px; /* Increase spacing */
+        left: 10px;
       }
     
       .control-box {
-        margin: 4px;
-        padding: 6px;
+        margin: 6px;
+        padding: 8px;
         font-size: 12px;
-        max-width: none; /* Allow full width when stacked */
+        max-width: 160px; /* Slightly wider for better readability */
       }
     }
     
     @media (max-width: 480px) {
       .search-container {
-        width: calc(100% - 16px);
-        top: 75px; /* Adjust for smaller filter box */
-        left: 8px;
+        width: calc(100% - 20px);
+        top: 95px; /* Further adjust spacing */
+        left: 10px;
       }
     
       #search-input {
@@ -256,9 +256,10 @@
       }
     
       .control-box {
-        margin: 4px;
-        padding: 6px;
+        margin: 6px;
+        padding: 8px;
         font-size: 12px;
+        max-width: 180px; /* Allow more width on smaller screens */
       }
     
       .color-box {
@@ -301,9 +302,9 @@
     
     @media (max-width: 360px) {
       .search-container {
-        width: calc(100% - 12px);
-        top: 70px;
-        left: 6px;
+        width: calc(100% - 16px);
+        top: 100px; /* Final adjustment for very small screens */
+        left: 8px;
       }
     
       #search-input {
@@ -322,9 +323,10 @@
       }
     
       .control-box {
-        margin: 3px;
-        padding: 5px;
+        margin: 6px;
+        padding: 6px;
         font-size: 11px;
+        max-width: none; /* Allow full width on very small screens */
       }
     
       .info-table {
