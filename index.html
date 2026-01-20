@@ -14,9 +14,8 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      font-size: 16px; /* base font */
     }
-    
+
     #map {
       height: 100%;
       width: 100%;
@@ -25,81 +24,82 @@
     /* ---------- Search Bar ---------- */
     .search-container {
       position: absolute;
-      top: 15px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
-      max-width: 450px;
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      max-width: 400px;
+      background: white;
+      border: 0px solid white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       z-index: 2000;
-      padding: 6px 10px;
     }
     
     gmp-place-autocomplete {
       width: 100%;
-      font-size: 16px;
     }
-    
+
     /* ---------- Controls ---------- */
     .control-box {
       background: #ffffff;
-      padding: 12px 14px;
-      margin: 12px;
-      border-radius: 8px;
-      font-size: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      z-index: 3000;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      z-index: 3000; /* above search */
     }
     
     .legend-row {
-      margin-top: 8px;
-      font-size: 14px;
+      margin-top: 6px;
     }
     
     .color-box {
       display: inline-block;
-      width: 16px;
-      height: 16px;
-      margin-right: 8px;
+      width: 14px;
+      height: 14px;
+      margin-right: 6px;
       vertical-align: middle;
-      border-radius: 50%;
     }
     
-    .npp { background: #1E3A8A; border-radius: 50%;}
-    .closed { background: #FFA500; border-radius: 50%;}
-    .error { background: #D32F2F; border-radius: 50%;}
+    .npp { background: #1E3A8A; border-radius: 50%; }
+    .closed { background: #FFA500; border-radius: 50%; }
+    .error { background: #D32F2F; border-radius: 50%; }
     
     /* ---------- Hover Tooltip ---------- */
     #hover-tooltip {
       position: absolute;
       pointer-events: none;
-      max-width: 300px;
-      background: rgba(255, 255, 255, 0.97);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      max-width: 280px;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       display: none;
       z-index: 1000;
-      transform: translate(14px, 14px);
-      transition: opacity 0.15s ease;
+      transform: translate(12px, 12px);
+      transition: opacity 0.12s ease;
     }
     
     /* ---------- InfoWindow ---------- */
     .info-window {
-      max-height: 280px;
-      max-width: 460px;
+      max-height: 250px;
+      max-width: 420px;
       overflow-y: auto;
-      font-size: 14px;
+      font-size: 13px;
       word-wrap: break-word;
+      overflow-wrap: break-word;
       white-space: normal;
     }
     
     .info-table {
       width: 100%;
-      min-width: 320px;
+      min-width: 300px;
       border-collapse: collapse;
       table-layout: fixed;
     }
@@ -112,7 +112,7 @@
     
     .info-table th,
     .info-table td {
-      padding: 8px 10px;
+      padding: 6px 8px;
       border-bottom: 1px solid #eee;
       text-align: left;
       vertical-align: top;
@@ -120,91 +120,72 @@
     
     .info-table td:first-child {
       font-weight: bold;
-      width: 140px;
+      width: 120px;
     }
     
     .info-table td:nth-child(2) {
-      max-width: 300px;
+      max-width: 280px;
       word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     
     .info-table tbody tr:nth-child(even) {
       background: #f9f9f9;
     }
-    
+
     /* ---------- Mobile Responsive Design ---------- */
     @media (max-width: 1100px) {
       .search-container {
         width: calc(100% - 20px);
         max-width: none;
-        top: 80px;
+        top: 90px; /* Move below filter box */
         left: 10px;
         transform: none;
       }
-    
+      
       .control-box {
-        margin: 8px;
-        padding: 10px 12px;
-        font-size: 14px;
+        margin: 6px;
+        padding: 8px;
+        font-size: 12px;
+        width: auto;
+        max-width: none;
       }
-    
+
       .color-box {
-        width: 14px;
-        height: 14px;
-        margin-right: 6px;
+        width: 12px;
+        height: 12px;
+        margin-right: 4px;
       }
     
       #hover-tooltip {
         max-width: calc(100vw - 20px);
-        font-size: 13px;
-        padding: 8px 10px;
-        transform: translate(10px, 10px);
+        font-size: 11px;
+        padding: 6px;
+        transform: translate(8px, 8px);
       }
-    
+
       .info-window {
         max-width: calc(100vw - 20px);
-        max-height: 220px;
-        font-size: 13px;
+        max-height: 180px;
+        font-size: 11px;
       }
     
       .info-table {
-        min-width: 220px;
-        font-size: 13px;
+        min-width: 200px;
+        font-size: 11px;
       }
     
       .info-table td:first-child {
-        width: 100px;
+        width: 80px;
       }
     
       .info-table td:nth-child(2) {
-        max-width: 140px;
+        max-width: 120px;
       }
     
       .info-table th,
       .info-table td {
-        padding: 5px 6px;
-      }
-    }
-    
-    /* ---------- Extra Mobile Improvements ---------- */
-    @media (max-width: 600px) {
-      .search-container {
-        top: 70px;
-        font-size: 16px;
-      }
-    
-      .control-box {
-        font-size: 13px;
-        padding: 10px;
-      }
-    
-      .info-window {
-        font-size: 14px;
-        max-height: 200px;
-      }
-    
-      #hover-tooltip {
-        font-size: 14px;
+        padding: 3px 4px;
       }
     }
   </style>
