@@ -135,11 +135,11 @@
     }
 
     /* ---------- Mobile Responsive Design ---------- */
-    @media (max-width: 768px) {
+    @media (max-width: 1100px) {
       .search-container {
         width: calc(100% - 16px);
         max-width: none;
-        top: 12px;
+        top: 30px;
         left: 8px;
         transform: none;
         border-radius: 10px;
@@ -158,7 +158,18 @@
         line-height: 1.4;
         border-radius: 10px;
       }
-    
+      
+      .filter-control {
+        position: fixed !important;     /* override Google Maps */
+        top: 72px;                      /* just below search bar */
+        right: 8px;
+        left: auto !important;
+        margin: 0;
+        width: auto;
+        max-width: 70%;
+        z-index: 3000;
+      }
+      
       .control-box label {
         display: block;
         margin-top: 6px;
@@ -219,6 +230,12 @@
       .info-window h1 {
         font-size: 18px;
         margin: 6px 0 10px;
+      }
+    }
+
+    @media (hover: none) {
+      #hover-tooltip {
+        display: none !important;
       }
     }
   </style>
@@ -407,7 +424,7 @@
     ====================== */
     function createToggleControls(map, npcLayer, estLayer) {
       const div = document.createElement("div");
-      div.className = "control-box";
+      div.className = "control-box filter-control";
       div.innerHTML = `
         <b>Filter</b><br />
         <label><input type="checkbox" checked /> NPC Boundaries</label><br />
