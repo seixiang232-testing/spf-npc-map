@@ -72,11 +72,10 @@
       const autocomplete = document.getElementById("autocomplete");
 
       autocomplete.addEventListener("gmp-select", async (event) => {
-        const place = event.place;
-        console.log(place);
-        if (!place) return;
+        console.log("event:", event);
+        console.log("event.place:", event.place);
         
-        // 🔑 REQUIRED for Places API (New)
+        const place = event.place;
         await place.fetchFields({
           fields: ["location"]
         });
