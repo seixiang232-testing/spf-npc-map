@@ -71,18 +71,25 @@
 
       marker = new google.maps.marker.AdvancedMarkerElement({
         map,
-        position: initialPosition
+        position: null
       });
 
       const autocomplete = document.getElementById("autocomplete");
 
       autocomplete.addEventListener("gmp-placeselect", (event) => {
         const place = event.place;
-        if (!place?.location) return;
-
+        if (!place) return;
+        
+        // 🔑 REQUIRED for Places API (New)
+        await place.fetchFields({
+          fields: ["location"]
+        });
+      
+        if (!place.location) return;
+      
         map.panTo(place.location);
         map.setZoom(16);
-
+      
         marker.position = place.location;
       });
     };
