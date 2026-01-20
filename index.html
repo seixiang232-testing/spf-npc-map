@@ -5,19 +5,11 @@
   <title>Google Maps Advanced Marker Autocomplete</title>
 
   <!-- Google Maps JS API (Places + Advanced Markers) -->
-  <!-- <script
+  <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places,marker&v=weekly&loading=async&callback=initMap"
     async
     defer>
-  </script> -->
-
-  <!-- ✅ Correct loader for Web Components -->
-  <gmpx-api-loader
-    key="AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA"
-    libraries="places,marker"
-    version="weekly"
-    callback="initMap">
-  </gmpx-api-loader>
+  </script>
   
   <style>
     html, body {
@@ -79,7 +71,7 @@
 
       const autocomplete = document.getElementById("autocomplete");
 
-      autocomplete.addEventListener("gmp-placeselect", async (event) => {
+      autocomplete.addEventListener("gmp-select", async (event) => {
         console.log("gmp-placeselect", event);
         const place = event.detail.place; // ✅ correct
         if (!place) return;
