@@ -80,12 +80,11 @@
         });
       
         if (!place.location) return;
-        console.log("Place object:", place);
         console.log("Name:", place.displayName);
         console.log("Address:", place.formattedAddress);
         console.log("LatLng:", place.location.toJSON());
         // Move map
-        map.setCenter(place.location);
+        map.PanTo(place.location);
         map.setZoom(16);
         
         // ✅ Create marker ONLY on first selection
