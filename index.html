@@ -678,9 +678,12 @@
     window.initMap = initMap;
   </script>
 
+  <!-- Extended Component Library (add this BEFORE the Maps API script) -->
+  <script type="module" src="https://unpkg.com/@googlemaps/extended-component-library@0.6"></script>
+
   <!-- Google Maps API with Places library -->
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&callback=initMap&v=weekly"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&callback=initMap&v=weekly&libraries=places,marker&loading=async"
     async defer
   ></script>
 </body>
