@@ -49,7 +49,9 @@
   <div class="search-container">
     <gmp-place-autocomplete
       id="autocomplete"
-      placeholder="Search for a place">
+      placeholder="Search for a place"
+      country="sg"
+      types="address">
     </gmp-place-autocomplete>
   </div>
 
@@ -84,7 +86,7 @@
         console.log("Address:", place.formattedAddress);
         console.log("LatLng:", place.location.toJSON());
         // Move map
-        map.PanTo(place.location);
+        map.setCenter(place.location);
         map.setZoom(16);
         
         // ✅ Create marker ONLY on first selection
