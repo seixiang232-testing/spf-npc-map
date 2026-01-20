@@ -72,7 +72,7 @@
       const autocomplete = document.getElementById("autocomplete");
 
       autocomplete.addEventListener("gmp-select", async (event) => {
-        const place = event.place; // ✅ correct
+        const place = await placePrediction.toPlace();
         if (!place) return;
         
         // 🔑 REQUIRED for Places API (New)
@@ -81,7 +81,7 @@
         });
       
         if (!place.location) return;
-        
+        console.log("Working...")
         // Move map
         map.setCenter(place.location);
         map.setZoom(16);
