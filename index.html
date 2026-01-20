@@ -73,7 +73,7 @@
 
       autocomplete.addEventListener("gmp-select", async (event) => {
         console.log("event:", event);
-        console.log("event.place:", event.place);
+        console.log("event.place:", event.placePrediction.toPlace());
         
         const place = event.place;
         await place.fetchFields({
