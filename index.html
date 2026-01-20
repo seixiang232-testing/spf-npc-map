@@ -6,7 +6,7 @@
 
   <!-- Google Maps JS API (Places + Advanced Markers) -->
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places,marker"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places,marker&loading=async&callback=initMap"
     async
     defer>
   </script>
@@ -76,7 +76,7 @@
 
       const autocomplete = document.getElementById("autocomplete");
 
-      autocomplete.addEventListener("gmp-placeselect", (event) => {
+      autocomplete.addEventListener("gmp-placeselect", async (event) => {
         const place = event.place;
         if (!place) return;
         
@@ -93,12 +93,6 @@
         marker.position = place.location;
       });
     };
-
-    window.addEventListener("load", () => {
-      if (window.google?.maps) {
-        initMap();
-      }
-    });
   </script>
 </body>
 </html>
