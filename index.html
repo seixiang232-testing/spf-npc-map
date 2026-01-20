@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Google Maps Place Autocomplete</title>
+  <title>Google Maps Advanced Marker Autocomplete</title>
 
-  <!-- Google Maps JS API -->
+  <!-- Google Maps JS API (Places + Advanced Markers) -->
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places,marker"
     async
     defer>
   </script>
@@ -29,7 +29,7 @@
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 5;
+      z-index: 10;
       width: 90%;
       max-width: 400px;
       background: white;
@@ -45,7 +45,7 @@
 </head>
 
 <body>
-  <!-- Search Bar -->
+  <!-- Search -->
   <div class="search-container">
     <gmp-place-autocomplete
       id="autocomplete"
@@ -61,39 +61,34 @@
     let marker;
 
     window.initMap = () => {
-      // Initial map center (Singapore)
-      const initialPosition = { lat: 1.3521, lng: 103.8198 };
+      const initialPosition = { lat: 1.3521, lng: 103.8198 }; // Singapore
 
       map = new google.maps.Map(document.getElementById("map"), {
         center: initialPosition,
         zoom: 12,
+        mapId: "1965133852f3b853c479e261" // REQUIRED for Advanced Markers
       });
 
-      marker = new google.maps.Marker({
+      marker = new google.maps.marker.AdvancedMarkerElement({
         map,
-        position: initialPosition,
+        position: initialPosition
       });
 
-      const autocomplete =
-        document.getElementById("autocomplete");
+      const autocomplete = document.getElementById("autocomplete");
 
       autocomplete.addEventListener("gmp-placeselect", (event) => {
         const place = event.place;
+        if (!place?.location) return;
 
-        if (!place || !place.location) return;
-
-        // Move map
         map.panTo(place.location);
         map.setZoom(16);
 
-        // Update marker
-        marker.setPosition(place.location);
+        marker.position = place.location;
       });
     };
 
-    // Wait for Google Maps to load
     window.addEventListener("load", () => {
-      if (window.google && window.google.maps) {
+      if (window.google?.maps) {
         initMap();
       }
     });
