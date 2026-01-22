@@ -262,12 +262,19 @@
     const MAP_CENTER = { lat: 1.3521, lng: 103.8198 };
     const NPC_GEOJSON_URL = "https://npc-boundary-geojson-proxy.seixiang232.workers.dev/";
     const EST_GEOJSON_URL = "https://establishments-geojson-proxy.seixiang232.workers.dev/";
-
+    
     const COLORS = {
       NPP: "#1E3A8A",
       CLOSED: "#FFA500",
       DEFAULT: "#D32F2F"
     };
+    
+    const NPC_ACTIVE_STYLE = feature => ({
+      fillColor: stringToColor(feature.getProperty("NPC_NAME")),
+      fillOpacity: 0.65,          // optional: slightly stronger fill
+      strokeColor: "#ffffff",     // white border
+      strokeWeight: 3             // tighter / more prominent border
+    });
     
     let map;
     let marker;
@@ -362,6 +369,7 @@
       
       layer.addListener("click", e => {
         clickedFeature = e.feature;
+        layer.overrideStyle(e.feature, NPC_ACTIVE_STYLE(e.feature));
         hideTooltip();
         clickInfoWindow.setContent(buildNpcContent(e.feature));
         clickInfoWindow.setPosition(e.latLng);
@@ -374,17 +382,25 @@
 
       layer.addListener("mouseover", e => {
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+        
         map.getDiv().style.cursor = "pointer";
+        layer.overrideStyle(e.feature, NPC_ACTIVE_STYLE(e.feature));
         showTooltip(buildNpcHoverContent(e.feature), e);
       });
 
       layer.addListener("mousemove", e => {
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+        
         moveTooltip(e);
       });
 
       layer.addListener("mouseout", () => {
         map.getDiv().style.cursor = "";
+        
+        // Only revert if this feature isn't the clicked one with an open InfoWindow
+        if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+        
+        layer.revertStyle(e.feature);
         hideTooltip();
       });
 
@@ -413,6 +429,7 @@
       
       layer.addListener("mouseover", e => {
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+        
         map.getDiv().style.cursor = "pointer";
         showTooltip(buildEstHoverContent(e.feature), e);
       });
