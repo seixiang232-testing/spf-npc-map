@@ -306,6 +306,10 @@
       });
       
       clickInfoWindow.addListener("closeclick", () => {
+        if (clickedFeature) {
+          layer.revertStyle(clickedFeature);
+        }
+        
         isClickInfoWindowOpen = false;
         clickedFeature = null;
       });
