@@ -394,7 +394,7 @@
         moveTooltip(e);
       });
 
-      layer.addListener("mouseout", () => {
+      layer.addListener("mouseout", e => {
         map.getDiv().style.cursor = "";
         
         // Only revert if this feature isn't the clicked one with an open InfoWindow
