@@ -316,7 +316,7 @@
       
       clickInfoWindow.addListener("closeclick", () => {
         if (clickedFeature) {
-          layer.revertStyle(clickedFeature);
+          layer.overrideStyle(e.feature, NPC_NORMAL_STYLE(e.feature));
         }
         
         isClickInfoWindowOpen = false;
