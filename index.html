@@ -5,46 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Singapore Police NPC & NPP</title>
   <script>
+    // Simple client-side password protection
     (function() {
-        const correctPassword = "1234";
-        let attempts = 0;
-        const maxAttempts = 5;
+      const correctPassword = "1234";
+      
+      function loadGoogleMaps() {
+        const script = document.createElement("script");
+        script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places,marker&v=weekly&loading=async&callback=initMap";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
 
-        // Function to prompt the user for password input
-        function promptPassword() {
-            const enteredPassword = prompt("Please enter the password to access this page:");
-
-            // If the password is correct, allow access
-            if (enteredPassword === correctPassword) {
-                alert("Password correct. Access granted.");
-                initMap(); // Initialize your map or whatever functionality you want to grant access to
-            } else {
-                attempts++;
-                // If the password is incorrect, check the number of attempts
-                if (attempts >= maxAttempts) {
-                    alert("Too many incorrect attempts. Access denied.");
-                    document.body.innerHTML = "<h1>Access Denied</h1><p>You have exceeded the maximum number of attempts.</p>";
-                } else {
-                    alert("Incorrect password. You have " + (maxAttempts - attempts) + " attempts left.");
-                    promptPassword(); // Recursively prompt until maxAttempts are reached
-                }
-            }
+      function promptPassword() {
+        const enteredPassword = prompt("Please enter the password to access this page:");
+        
+        if (enteredPassword === correctPassword) {
+          alert("Password correct. Access granted.");
+          document.body.innerHTML = "<h1>Welcome</h1>";
+          loadGoogleMaps(); // ✅ load map ONLY now
+        } else {
+          alert("Incorrect password. Access Denied.");
+          document.body.innerHTML = "<h1>Access Denied</h1>";
+          promptPassword();
         }
-
-        promptPassword(); // Start the password check process
-
-        // Function to initialize the map (dummy placeholder for your actual map logic)
-        function initMap() {
-            // Your map initialization logic goes here
-            document.body.innerHTML = "<h1>Welcome to the Map</h1><p>You have successfully logged in!</p>";
-        }
+      }
+      
+      promptPassword();
     })();
   </script>
   <script type="module" src="https://unpkg.com/@googlemaps/extended-component-library@0.6"></script>
-  <script
+  <!-- <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRHYlg2978t2LjP6o4mirP3kUD_GylLgA&libraries=places,marker&v=weekly&loading=async&callback=initMap"
     async defer>
-  </script>
+  </script> -->
   <style>
     html, body {
       margin: 0;
