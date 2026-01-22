@@ -289,8 +289,9 @@
     let clickInfoWindow;
     let clickedFeature = null;
     let isClickInfoWindowOpen = false;
+    let isNppClicked = false;
     let tooltip;
-
+    
     /* =====================
        Init Map
     ====================== */
@@ -316,7 +317,13 @@
       
       clickInfoWindow.addListener("closeclick", () => {
         if (clickedFeature) {
-          layer.overrideStyle(e.feature, NPC_NORMAL_STYLE(e.feature));
+          if (isNppClicked) {
+            layer.overrideStyle(e.feature, {
+              icon: buildEstablishmentActiveIcon(e.feature)
+            });
+          } else {
+            layer.overrideStyle(e.feature, NPC_NORMAL_STYLE(e.feature));
+          }
         }
         
         isClickInfoWindowOpen = false;
@@ -371,6 +378,7 @@
       layer.setStyle(NPC_NORMAL_STYLE);
       
       layer.addListener("click", e => {
+        isNppClicked = false;
         clickedFeature = e.feature;
         layer.overrideStyle(e.feature, NPC_ACTIVE_STYLE(e.feature));
         hideTooltip();
@@ -403,7 +411,7 @@
         // Only revert if this feature isn't the clicked one with an open InfoWindow
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
         
-        layer.revertStyle(e.feature);
+        layer.overrideStyle(e.feature, NPC_NORMAL_STYLE(e.feature));
         hideTooltip();
       });
 
@@ -420,7 +428,11 @@
       }));
 
       layer.addListener("click", e => {
+        isNppClicked = true;
         clickedFeature = e.feature;
+        layer.overrideStyle(e.feature, {
+          icon: buildEstablishmentActiveIcon(e.feature)
+        });
         hideTooltip();
         clickInfoWindow.setContent(buildEstContent(e.feature));
         clickInfoWindow.setPosition(e.latLng);
@@ -434,11 +446,19 @@
         if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
         
         map.getDiv().style.cursor = "pointer";
+        layer.overrideStyle(e.feature, {
+          icon: buildEstablishmentActiveIcon(e.feature)
+        });
         showTooltip(buildEstHoverContent(e.feature), e);
       });
       
-      layer.addListener("mouseout", () => {
+      layer.addListener("mouseout", e => {
         map.getDiv().style.cursor = "";
+
+        if (e.feature === clickedFeature && isClickInfoWindowOpen) return;
+        layer.overrideStyle(e.feature, {
+          icon: buildEstablishmentIcon(e.feature)
+        });
         hideTooltip();
       });
 
@@ -493,11 +513,30 @@
         scale: 10,
         fillColor: color,
         fillOpacity: 1,
-        strokeColor: "#ffffff",
-        strokeWeight: 1
+        strokeColor: "#333333",
+        strokeWeight: 1,
+        zIndex: 1
       };
     }
 
+    function buildEstablishmentActiveIcon(feature) {
+      const dept = feature.getProperty("DEPARTMENT") || "";
+    
+      let color = COLORS.DEFAULT;
+      if (dept.includes("Neighbourhood Police Post")) color = COLORS.NPP;
+      if (dept.includes("Neighbourhood Police Post") && dept.includes("Closed")) color = COLORS.CLOSED;
+    
+      return {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 10,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 3,      // 🔥 thicker white border
+        zIndex: 999           // 🔥 always on top
+      };
+    }
+    
     function buildNpcContent(feature) {
       return buildTable("NPC Boundary Info", [
         ["OBJECTID", feature.getProperty("OBJECTID")],
