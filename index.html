@@ -268,11 +268,18 @@
       DEFAULT: "#D32F2F"
     };
     
+    const NPC_NORMAL_STYLE = feature => ({
+      fillColor: stringToColor(feature.getProperty("NPC_NAME")),
+      fillOpacity: 0.55,
+      strokeColor: "#333333",
+      strokeWeight: 1.5
+    });
+    
     const NPC_ACTIVE_STYLE = feature => ({
       fillColor: stringToColor(feature.getProperty("NPC_NAME")),
       fillOpacity: 0.55,          // optional: slightly stronger fill
       strokeColor: "#ffffff",     // white border
-      strokeWeight: 2             // tighter / more prominent border
+      strokeWeight: 3             // tighter / more prominent border
     });
     
     let map;
@@ -359,16 +366,7 @@
         });
       });
       
-      layer.setStyle(feature => {
-        const name = feature.getProperty("NPC_NAME");
-        
-        return {
-          fillColor: stringToColor(name),
-          fillOpacity: 0.55,
-          strokeColor: "#333333",
-          strokeWeight: 2
-        };
-      });
+      layer.setStyle(NPC_NORMAL_STYLE);
       
       layer.addListener("click", e => {
         clickedFeature = e.feature;
